@@ -324,194 +324,188 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, addDoc, collection, setDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // IMPORTANT: Use this block to ensure all Firebase services are initialized.
         setLogLevel('Debug');
 
-        const privacyModal = document.getElementById('privacy-modal');
-        const successModal = document.getElementById('success-modal');
-        const appointmentMain = document.getElementById('appointment-main');
-        const agreeButton = document.getElementById('agree-button');
-        const closeSuccessButton = document.getElementById('close-success-button');
-        const nextButton = document.getElementById('next-button');
-        const backButton = document.getElementById('back-button');
-        const reviewButton = document.getElementById('review-button');
-        const editButton = document.getElementById('edit-button');
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const step3 = document.getElementById('step-3');
-        const validationMessage = document.getElementById('validation-message');
-
-        const successUserIdSpan = document.getElementById('success-user-id');
-        const successAppointmentIdSpan = document.getElementById('success-appointment-id');
-
-        // Firebase Initialization
         let db, auth, userId;
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-
-        // Authenticate the user
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
+        if (Object.keys(firebaseConfig).length > 0) {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            // Authenticate the user
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Firebase Auth error:", error);
                     }
-                } catch (error) {
-                    console.error("Firebase Auth error:", error);
-                }
-            } else {
-                userId = user.uid;
-                console.log("Authenticated with user ID:", userId);
-            }
-        });
-
-        // Set the minimum date for the date picker to tomorrow
-        const preferredDateInput = document.getElementById('preferredDate');
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const yyyy = tomorrow.getFullYear();
-        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const dd = String(tomorrow.getDate()).padStart(2, '0');
-        const minDate = `${yyyy}-${mm}-${dd}`;
-        preferredDateInput.setAttribute('min', minDate);
-
-        agreeButton.addEventListener('click', function() {
-            privacyModal.classList.add('hidden');
-            appointmentMain.classList.remove('hidden');
-        });
-
-        closeSuccessButton.addEventListener('click', function() {
-            successModal.classList.add('hidden');
-            document.getElementById('appointmentForm').reset();
-            step3.classList.add('hidden');
-            step1.classList.remove('hidden');
-        });
-
-        function validateStep(stepElement) {
-            const requiredInputs = stepElement.querySelectorAll('[required]');
-            let allValid = true;
-            requiredInputs.forEach(input => {
-                input.classList.remove('border-red-500');
-                if (!input.checkValidity()) {
-                    allValid = false;
-                    input.classList.add('border-red-500');
+                } else {
+                    userId = user.uid;
+                    console.log("Authenticated with user ID:", userId);
                 }
             });
-            return allValid;
         }
 
-        function populateConfirmation() {
-            const form = document.getElementById('appointmentForm');
-            const data = {
-                firstName: form.firstName.value,
-                lastName: form.lastName.value,
-                middleName: form.middleName.value,
-                age: form.age.value,
-                sex: form.sex.options[form.sex.selectedIndex].text,
-                email: form.email.value,
-                phone: form.phone.value,
-                services: form.services.options[form.services.selectedIndex].text,
-                healthCenter: form.healthCenter.options[form.healthCenter.selectedIndex].text,
-                specificDetails: form.specificDetails.value,
-                preferredDate: form.preferredDate.value,
-                preferredTime: form.preferredTime.options[form.preferredTime.selectedIndex].text,
-            };
+        // Wait for the DOM to be fully loaded before attaching event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const privacyModal = document.getElementById('privacy-modal');
+            const successModal = document.getElementById('success-modal');
+            const appointmentMain = document.getElementById('appointment-main');
+            const agreeButton = document.getElementById('agree-button');
+            const closeSuccessButton = document.getElementById('close-success-button');
+            const nextButton = document.getElementById('next-button');
+            const backButton = document.getElementById('back-button');
+            const reviewButton = document.getElementById('review-button');
+            const editButton = document.getElementById('edit-button');
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            const validationMessage = document.getElementById('validation-message');
 
-            document.getElementById('confirmName').textContent = `${data.firstName} ${data.middleName} ${data.lastName}`;
-            document.getElementById('confirmAge').textContent = data.age;
-            document.getElementById('confirmSex').textContent = data.sex;
-            document.getElementById('confirmEmail').textContent = data.email;
-            document.getElementById('confirmPhone').textContent = data.phone;
-            document.getElementById('confirmService').textContent = data.services;
-            document.getElementById('confirmHealthCenter').textContent = data.healthCenter;
-            document.getElementById('confirmDate').textContent = data.preferredDate;
-            document.getElementById('confirmTime').textContent = data.preferredTime;
-            document.getElementById('confirmDetails').textContent = data.specificDetails;
-        }
+            const successUserIdSpan = document.getElementById('success-user-id');
+            const successAppointmentIdSpan = document.getElementById('success-appointment-id');
 
-        nextButton.addEventListener('click', function() {
-            if (validateStep(step1)) {
-                step1.classList.add('hidden');
-                step2.classList.remove('hidden');
-                validationMessage.classList.add('hidden');
-            } else {
-                validationMessage.classList.remove('hidden');
-            }
-        });
+            // Set the minimum date for the date picker to tomorrow
+            const preferredDateInput = document.getElementById('preferredDate');
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            const minDate = `${yyyy}-${mm}-${dd}`;
+            preferredDateInput.setAttribute('min', minDate);
 
-        backButton.addEventListener('click', function() {
-            step2.classList.add('hidden');
-            step1.classList.remove('hidden');
-            validationMessage.classList.add('hidden');
-        });
+            // Event listeners
+            agreeButton.addEventListener('click', function() {
+                console.log("Agree button clicked.");
+                privacyModal.classList.add('hidden');
+                appointmentMain.classList.remove('hidden');
+            });
 
-        reviewButton.addEventListener('click', function() {
-            if (validateStep(step2)) {
-                populateConfirmation();
-                step2.classList.add('hidden');
-                step3.classList.remove('hidden');
-                validationMessage.classList.add('hidden');
-            } else {
-                validationMessage.classList.remove('hidden');
-            }
-        });
+            closeSuccessButton.addEventListener('click', function() {
+                successModal.classList.add('hidden');
+                document.getElementById('appointmentForm').reset();
+                step3.classList.add('hidden');
+                step1.classList.remove('hidden');
+            });
 
-        editButton.addEventListener('click', function() {
-            step3.classList.add('hidden');
-            step1.classList.remove('hidden');
-            validationMessage.classList.add('hidden');
-        });
-
-        document.getElementById('appointmentForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            validationMessage.classList.add('hidden');
-
-            try {
-                if (!userId) {
-                    throw new Error("User not authenticated.");
-                }
-
-                const formData = new FormData(event.target);
-                const data = Object.fromEntries(formData.entries());
-                data.userId = userId;
-
-                // Create a collection path based on the selected health center
-                const healthCenter = data.healthCenter;
-                const collectionName = `${healthCenter}_appointments`;
-                const collectionPath = `artifacts/${appId}/public/data/${collectionName}`;
-
-                const docRef = await addDoc(collection(db, collectionPath), data);
-                
-                // Display the user and appointment IDs in the success modal
-                successUserIdSpan.textContent = userId;
-                successAppointmentIdSpan.textContent = docRef.id;
-
-                successModal.classList.remove('hidden');
-
-                // For real-time updates demonstration (optional, logs to console)
-                // This listener will react to any changes in the collection
-                // This shows how a dashboard for a health center could be updated in real-time
-                const q = collection(db, collectionPath);
-                // Listen for any new appointments added to the selected health center's collection
-                const unsubscribe = onSnapshot(q, (querySnapshot) => {
-                    const appointments = [];
-                    querySnapshot.forEach((doc) => {
-                        appointments.push(doc.data());
-                    });
-                    console.log(`Real-time update: ${appointments.length} appointments found for ${healthCenter}.`);
+            function validateStep(stepElement) {
+                const requiredInputs = stepElement.querySelectorAll('[required]');
+                let allValid = true;
+                requiredInputs.forEach(input => {
+                    input.classList.remove('border-red-500');
+                    if (!input.checkValidity()) {
+                        allValid = false;
+                        input.classList.add('border-red-500');
+                    }
                 });
-            } catch (error) {
-                console.error("Error submitting appointment:", error);
-                // You could add a user-facing error message here
+                return allValid;
             }
+
+            function populateConfirmation() {
+                const form = document.getElementById('appointmentForm');
+                const data = {
+                    firstName: form.firstName.value,
+                    lastName: form.lastName.value,
+                    middleName: form.middleName.value,
+                    age: form.age.value,
+                    sex: form.sex.options[form.sex.selectedIndex].text,
+                    email: form.email.value,
+                    phone: form.phone.value,
+                    services: form.services.options[form.services.selectedIndex].text,
+                    healthCenter: form.healthCenter.options[form.healthCenter.selectedIndex].text,
+                    specificDetails: form.specificDetails.value,
+                    preferredDate: form.preferredDate.value,
+                    preferredTime: form.preferredTime.options[form.preferredTime.selectedIndex].text,
+                };
+
+                document.getElementById('confirmName').textContent = `${data.firstName} ${data.middleName} ${data.lastName}`;
+                document.getElementById('confirmAge').textContent = data.age;
+                document.getElementById('confirmSex').textContent = data.sex;
+                document.getElementById('confirmEmail').textContent = data.email;
+                document.getElementById('confirmPhone').textContent = data.phone;
+                document.getElementById('confirmService').textContent = data.services;
+                document.getElementById('confirmHealthCenter').textContent = data.healthCenter;
+                document.getElementById('confirmDate').textContent = data.preferredDate;
+                document.getElementById('confirmTime').textContent = data.preferredTime;
+                document.getElementById('confirmDetails').textContent = data.specificDetails;
+            }
+
+            nextButton.addEventListener('click', function() {
+                if (validateStep(step1)) {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    validationMessage.classList.add('hidden');
+                } else {
+                    validationMessage.classList.remove('hidden');
+                }
+            });
+
+            backButton.addEventListener('click', function() {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                validationMessage.classList.add('hidden');
+            });
+
+            reviewButton.addEventListener('click', function() {
+                if (validateStep(step2)) {
+                    populateConfirmation();
+                    step2.classList.add('hidden');
+                    step3.classList.remove('hidden');
+                    validationMessage.classList.add('hidden');
+                } else {
+                    validationMessage.classList.remove('hidden');
+                }
+            });
+
+            editButton.addEventListener('click', function() {
+                step3.classList.add('hidden');
+                step1.classList.remove('hidden');
+                validationMessage.classList.add('hidden');
+            });
+
+            document.getElementById('appointmentForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                validationMessage.classList.add('hidden');
+
+                try {
+                    if (!userId) {
+                        throw new Error("User not authenticated.");
+                    }
+
+                    const formData = new FormData(event.target);
+                    const data = Object.fromEntries(formData.entries());
+                    data.userId = userId;
+
+                    // Create a collection path based on the selected health center
+                    const healthCenter = data.healthCenter;
+                    const collectionName = `${healthCenter}_appointments`;
+                    const collectionPath = `artifacts/${appId}/public/data/${collectionName}`;
+
+                    const docRef = await addDoc(collection(db, collectionPath), data);
+                    
+                    // Display the user and appointment IDs in the success modal
+                    successUserIdSpan.textContent = userId;
+                    successAppointmentIdSpan.textContent = docRef.id;
+
+                    successModal.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Error submitting appointment:", error);
+                    // You could add a user-facing error message here
+                }
+            });
         });
     </script>
 </body>

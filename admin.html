@@ -1,150 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin • Appointments</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; background:#f6f8fb; margin:0; }
-    .wrap { max-width:980px; margin:36px auto; background:#fff; border-radius:14px; box-shadow:0 10px 25px rgba(0,0,0,.06); padding:20px; }
-    h1 { margin:0 0 14px; font-size:22px; }
-    .toolbar { display:flex; gap:10px; align-items:center; margin:12px 0 16px; }
-    input, select, button { padding:8px 10px; border:1px solid #d9e0ea; border-radius:8px; background:#fff; cursor:pointer; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { border-bottom:1px solid #eef2f7; padding:10px 8px; text-align:left; font-size:14px; }
-    th { background:#f9fbff; font-weight:700; }
-    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:#eef4ff; color:#234; }
-    .muted { color:#64748b; font-size:12px; }
-    .delete-btn { background:#fff; color:#e04646; border:1px solid #e04646; font-weight:bold; padding:4px 8px; border-radius:4px; cursor:pointer; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <h1>Admin Dashboard — Appointments</h1>
-
-    <div class="toolbar">
-      <label class="muted">Filter by date:</label>
-      <input type="date" id="filterDate"/>
-      <button id="clearFilter">Clear</button>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Queue #</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Patient</th>
-          <th>Age</th>
-          <th>Sex</th>
-          <th>Phone</th>
-          <th>Category</th>
-          <th>Details</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="10">Loading…</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAlQ2h3WdhMHVl9nwz_Ug3ejscxtWuEtlE",
-      authDomain: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-      databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-      storageBucket: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-      messagingSenderId: "420319378706",
-      appId: "1:420319378706:web:6083b4ccd5338a7e9a07cb",
-      measurementId: "G-S9XQE2SKFZ"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const tbody = document.getElementById("rows");
-    const filterDate = document.getElementById("filterDate");
-    const clearBtn = document.getElementById("clearFilter");
-
-    let all = [];
-
-    function render() {
-      const d = filterDate.value || null;
-      let list = [...all];
-      if (d) list = list.filter(x => x.date === d);
-
-      list.sort((a, b) => {
-        if (a.date === b.date) return a.time.localeCompare(b.time);
-        return a.date.localeCompare(b.date);
-      });
-
-      tbody.innerHTML = list.length
-        ? list.map(x => `
-          <tr>
-            <td><span class="badge">${x.queueNumber ?? "-"}</span></td>
-            <td>${x.date}</td>
-            <td>${x.time}</td>
-            <td>${x.lastName}, ${x.firstName}</td>
-            <td>${x.age}</td>
-            <td>${x.sex}</td>
-            <td>${x.phone}</td>
-            <td>${x.symptomsCategory || "-"}</td>
-            <td>${x.details || ""}</td>
-            <td>
-              <button class="delete-btn" data-key="${x.key}">Delete</button>
-            </td>
-          </tr>
-        `).join("")
-        : `<tr><td colspan="10">No appointments${d ? " for "+d : ""}.</td></tr>`;
-    }
-
-    function processSnapshot(snap) {
-      all = [];
-      if (snap.exists()) {
-        snap.forEach(appt => {
-          // Attach the Firebase key to each appointment object
-          all.push({ ...appt.val(), key: appt.key });
-        });
-      }
-      render();
-    }
-
-    // Live updates
-    onValue(ref(db, "appointments"), (snap) => {
-      processSnapshot(snap);
-    });
-
-    // Fallback refresh every 30s
-    setInterval(async () => {
-      const snap = await get(ref(db, "appointments"));
-      processSnapshot(snap);
-    }, 30000);
-
-    filterDate.addEventListener("change", render);
-    clearBtn.addEventListener("click", () => { filterDate.value = ""; render(); });
-
-    // Event delegation for the delete button
-    tbody.addEventListener("click", (e) => {
-      if (e.target.classList.contains("delete-btn")) {
-        const key = e.target.getAttribute("data-key");
-        if (confirm("Are you sure you want to delete this appointment?")) {
-          const appointmentRef = ref(db, `appointments/${key}`);
-          remove(appointmentRef)
-            .then(() => {
-              alert("Appointment deleted successfully.");
-            })
-            .catch(error => {
-              alert("Error deleting appointment.");
-              console.error(error);
-            });
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CITY HEALTH OFFICE Admin Dashboard</title>
+    <!-- Use the Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* A light blue-gray background */
         }
-      }
-    });
-  </script>
+        .header-bg {
+            background-color: #ffd700; /* Yellow background for the header */
+            background-image: linear-gradient(to right, #ffd700, #ffeb3b); /* Gradient for a nicer look */
+        }
+        .header-bg-dark {
+            background-color: #007bff; /* Blue background for the second header */
+        }
+        .button-bg {
+            background-color: #fff9c4; /* Light yellow for buttons */
+        }
+        .button-bg:hover {
+            background-color: #ffeb3b; /* A darker yellow on hover */
+        }
+        .text-dark-blue {
+            color: #1a237e; /* Dark blue text */
+        }
+        .logo-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Header Section -->
+    <header class="w-full header-bg shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="logo-shadow rounded-full p-2 bg-white flex items-center justify-center">
+                    <img src="" alt="City Health Office Logo" class="rounded-full w-12 h-12">
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
+                    <h2 class="text-lg md:text-xl font-medium text-dark-blue">Admin Dashboard--- Appointments</h2>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-2">
+                <input type="text" placeholder="search" class="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                <button class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition">CLEAR</button>
+            </div>
+        </div>
+        <div class="w-full h-2 header-bg-dark"></div>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="container mx-auto p-8 flex-grow">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <!-- Health Center Buttons -->
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">TUNASAN HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">VICTORIA HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">LAGUERTA HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">POBLACION HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">SOUTHVILLE HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">PUTATAN HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">PUTATAN ANNEX HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">LAKEVIEW HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">BAYANAN MAIN HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">ALABANG HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">AYALA ALABANG HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">CUPANG HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">SITIO STO. NINO HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">BULI HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">SUCAT HEALTH CENTER</a>
+            <a href="#" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">BAGONG SILANG HEALTH CENTER</a>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="w-full header-bg py-4 mt-auto shadow-inner">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <p class="text-sm text-dark-blue font-semibold">CITY HEALTH OFFICE</p>
+        </div>
+    </footer>
+
 </body>
 </html>

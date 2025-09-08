@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set Appointment</title>
-    <!-- Use the Inter font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -65,7 +63,6 @@
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
-    <!-- Privacy Notice Modal -->
     <div id="privacy-modal" class="modal">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-dark-blue mb-4">Privacy Notice</h3>
@@ -78,7 +75,6 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div id="success-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-green-600 mb-4">Appointment Confirmed!</h3>
@@ -100,7 +96,6 @@
         </div>
     </div>
 
-    <!-- Header Section -->
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -121,44 +116,35 @@
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
-    <!-- Appointment View -->
     <main id="appointment-main" class="container mx-auto p-8 flex-grow hidden">
         <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-dark-blue">Set Appointment</h2>
-        <!-- Validation Message Box -->
         <div id="validation-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
             <span class="block sm:inline">Please fill in all the required fields.</span>
         </div>
-        <!-- General Message Box -->
         <div id="general-message" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
             <span id="general-message-text" class="block sm:inline"></span>
         </div>
         <div class="form-card max-w-2xl mx-auto">
             <form id="appointmentForm">
-                <!-- Step 1: Personal Information -->
                 <div id="step-1" class="space-y-6">
                     <h3 class="text-xl font-semibold text-dark-blue">Step 1: Personal Information</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Last Name -->
                         <div class="col-span-1 md:col-span-1 lg:col-span-1">
                             <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name*</label>
                             <input type="text" id="lastName" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- First Name -->
                         <div class="col-span-1 md:col-span-1 lg:col-span-1">
                             <label for="firstName" class="block text-sm font-medium text-gray-700">First Name*</label>
                             <input type="text" id="firstName" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Middle Name -->
                         <div class="col-span-1 md:col-span-1 lg:col-span-1">
                             <label for="middleName" class="block text-sm font-medium text-gray-700">Middle Name</label>
                             <input type="text" id="middleName" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Age -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="age" class="block text-sm font-medium text-gray-700">Age*</label>
                             <input type="number" id="age" name="age" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Sex -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="sex" class="block text-sm font-medium text-gray-700">Sex*</label>
                             <select id="sex" name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -167,17 +153,14 @@
                                 <option value="female">Female</option>
                             </select>
                         </div>
-                        <!-- Email -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
                             <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Phone Number -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number*</label>
                             <input type="tel" id="phone" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Services -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="services" class="block text-sm font-medium text-gray-700">SERVICES*</label>
                             <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -187,7 +170,6 @@
                                 <option value="dental">Dental Services</option>
                             </select>
                         </div>
-                        <!-- Health Center -->
                         <div class="col-span-1 md:col-span-1">
                             <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
                             <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -210,7 +192,6 @@
                                 <option value="bagong_silang">BAGONG SILANG HEALTH CENTER</option>
                             </select>
                         </div>
-                        <!-- Specific Details -->
                         <div class="col-span-full">
                             <label for="specificDetails" class="block text-sm font-medium text-gray-700">Specific Details*</label>
                             <textarea id="specificDetails" name="specificDetails" rows="4" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Please describe your symptoms or the reason for your appointment in detail."></textarea>
@@ -221,16 +202,13 @@
                     </div>
                 </div>
 
-                <!-- Step 2: Date and Time -->
                 <div id="step-2" class="hidden space-y-6">
                     <h3 class="text-xl font-semibold text-dark-blue">Step 2: Preferred Date and Time</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Preferred Date -->
                         <div class="col-span-1">
                             <label for="preferredDate" class="block text-sm font-medium text-gray-700">Preferred Date*</label>
                             <input type="date" id="preferredDate" name="preferredDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                         </div>
-                        <!-- Preferred Time -->
                         <div class="col-span-1">
                             <label for="preferredTime" class="block text-sm font-medium text-gray-700">Preferred Time*</label>
                             <select id="preferredTime" name="preferredTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
@@ -263,7 +241,6 @@
                     </div>
                 </div>
 
-                <!-- Step 3: Confirmation -->
                 <div id="step-3" class="hidden space-y-6">
                     <h3 class="text-xl font-semibold text-dark-blue">Step 3: Confirm Your Details</h3>
                     <div class="bg-gray-100 p-6 rounded-lg space-y-4">
@@ -317,7 +294,6 @@
         </div>
     </main>
 
-    <!-- Footer Section -->
     <footer class="w-full header-bg py-4 mt-auto shadow-inner">
         <div class="container mx-auto px-4 flex items-center justify-center">
             <p class="text-sm text-dark-blue font-semibold">CITY HEALTH OFFICE</p>
@@ -330,34 +306,44 @@
         import { getFirestore, addDoc, collection, setDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Import the functions you need from the SDKs you need
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
         // IMPORTANT: Use this block to ensure all Firebase services are initialized.
         setLogLevel('Debug');
 
         let db, auth, userId;
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = {
+          apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
+          authDomain: "cho-clinic.firebaseapp.com",
+          databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "cho-clinic",
+          storageBucket: "cho-clinic.firebasestorage.app",
+          messagingSenderId: "1078609107976",
+          appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
+          measurementId: "G-FHE4TNMD0X"
+        };
 
-        if (Object.keys(firebaseConfig).length > 0) {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            // This is the key change. We now just sign in anonymously.
-            // This guarantees that a user ID will be created and set.
-            signInAnonymously(auth).catch(error => {
-                console.error("Anonymous sign-in failed:", error);
-            });
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
-            // The onAuthStateChanged listener will handle setting the userId
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    console.log("Authenticated with user ID:", userId);
-                } else {
-                    console.log("No user is signed in.");
-                }
-            });
-        }
+        // This is the key change. We now just sign in anonymously.
+        // This guarantees that a user ID will be created and set.
+        signInAnonymously(auth).catch(error => {
+            console.error("Anonymous sign-in failed:", error);
+        });
+
+        // The onAuthStateChanged listener will handle setting the userId
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("Authenticated with user ID:", userId);
+            } else {
+                console.log("No user is signed in.");
+            }
+        });
 
         // Wait for the DOM to be fully loaded before attaching event listeners
         document.addEventListener('DOMContentLoaded', () => {
@@ -515,25 +501,36 @@
                 }
 
                 try {
-                    const formData = new FormData(event.target);
-                    const data = Object.fromEntries(formData.entries());
-                    data.userId = userId;
+                    const form = event.target;
+                    const appointmentData = {
+                        lastName: form.lastName.value,
+                        firstName: form.firstName.value,
+                        middleName: form.middleName.value || null,
+                        age: form.age.value,
+                        sex: form.sex.value,
+                        email: form.email.value,
+                        phone: form.phone.value,
+                        services: form.services.value,
+                        healthCenter: form.healthCenter.value,
+                        specificDetails: form.specificDetails.value,
+                        preferredDate: form.preferredDate.value,
+                        preferredTime: form.preferredTime.value,
+                        timestamp: new Date().toISOString(),
+                    };
 
-                    // Create a collection path based on the selected health center
-                    const healthCenter = data.healthCenter;
-                    const collectionName = `${healthCenter}_appointments`;
-                    const collectionPath = `artifacts/${appId}/public/data/${collectionName}`;
-
-                    const docRef = await addDoc(collection(db, collectionPath), data);
+                    // Add a new document with an auto-generated ID to the "appointments" collection
+                    const docRef = await addDoc(collection(db, "appointments"), appointmentData);
+                    console.log("Document written with ID: ", docRef.id);
                     
-                    // Display the user and appointment IDs in the success modal
+                    // Display the success modal with the generated IDs
                     successUserIdSpan.textContent = userId;
                     successAppointmentIdSpan.textContent = docRef.id;
-
                     successModal.classList.remove('hidden');
-                } catch (error) {
-                    console.error("Error submitting appointment:", error);
-                    showMessage("There was an error submitting your appointment. Please try again.", 'error');
+
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    const message = "An error occurred while scheduling your appointment. Please try again.";
+                    showMessage(message, 'error');
                 }
             });
         });

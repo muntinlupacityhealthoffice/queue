@@ -48,17 +48,17 @@
     </table>
   </div>
 
-  <!-- Firebase (v10 modular) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+    // ✅ Updated Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAlQ2h3WdhMHVl9nwz_Ug3ejscxtWuEtlE",
-      authDomain: "clinic-for-cho-queue.firebaseapp.com",
-      databaseURL: "https://clinic-for-cho-queue-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "clinic-for-cho-queue",
-      storageBucket: "clinic-for-cho-queue.firebasestorage.app",
+      authDomain: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+      databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+      storageBucket: "cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
       messagingSenderId: "420319378706",
       appId: "1:420319378706:web:6083b4ccd5338a7e9a07cb",
       measurementId: "G-S9XQE2SKFZ"
@@ -94,8 +94,7 @@
             <td>${x.age}</td>
             <td>${x.sex}</td>
             <td>${x.phone}</td>
-            <td>${x.category || "-"}</td>
-            <td>${x.symptoms}</td>
+            <td>${x.symptomsCategory || "-"}</td>
             <td>${x.details || ""}</td>
           </tr>
         `).join("")

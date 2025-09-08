@@ -1,148 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Set Appointment</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-    .modal { background: rgba(0,0,0,.5); position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 2rem; border-radius: 1rem; max-width: 28rem; text-align: center; }
-    .border-red-500 { border-color: #ef4444; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Appointment</title>
+    <!-- Use the Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* A light blue-gray background */
+        }
+        .header-bg {
+            background-color: #ffd700; /* Yellow background for the header */
+            background-image: linear-gradient(to right, #ffd700, #ffeb3b); /* Gradient for a nicer look */
+        }
+        .header-bg-dark {
+            background-color: #1a237e; /* Dark blue background */
+        }
+        .text-dark-blue {
+            color: #1a237e; /* Dark blue text */
+        }
+        .logo-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+        .border-red-500 {
+            border-color: #ef4444;
+        }
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            max-width: 28rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col items-center">
 
-  <!-- Privacy Notice Modal -->
-  <div id="privacy-modal" class="modal">
-    <div class="modal-content">
-      <h3 class="text-xl font-bold text-blue-900 mb-2">Privacy Notice</h3>
-      <p class="text-sm text-gray-700 mb-4">By providing your info, you consent to its use by the City Health Office in compliance with RA 10173.</p>
-      <button id="agree-button" class="bg-yellow-400 px-6 py-2 rounded-full font-bold">I Agree</button>
+    <!-- Privacy Notice Modal -->
+    <div id="privacy-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-dark-blue mb-4">Privacy Notice</h3>
+            <p class="text-sm text-gray-700 mb-6 leading-relaxed">
+                By providing your personal information, you consent to its collection and use by the City Health Office for the purpose of setting and managing your health appointments, in compliance with the **Philippine Data Privacy Act of 2012 (R.A. 10173)**. We will ensure the confidentiality and security of your data and will not share it with any unauthorized third parties.
+            </p>
+            <button id="agree-button" class="bg-yellow-400 text-dark-blue font-bold py-2 px-6 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">
+                I Agree
+            </button>
+        </div>
     </div>
-  </div>
 
-  <!-- Success Modal -->
-  <div id="success-modal" class="modal hidden">
-    <div class="modal-content">
-      <h3 class="text-xl font-bold text-green-600 mb-2">Appointment Confirmed!</h3>
-      <p class="mb-2">Your appointment has been stored.</p>
-      <p class="font-semibold">User ID: <span id="success-user-id" class="font-normal"></span></p>
-      <p class="font-semibold mb-4">Appointment ID: <span id="success-appointment-id" class="font-normal"></span></p>
-      <button id="close-success-button" class="bg-yellow-400 px-6 py-2 rounded-full font-bold">Close</button>
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-green-600 mb-4">Appointment Confirmed!</h3>
+            <p class="text-gray-700 mb-4">
+                Your appointment has been successfully scheduled and stored.
+            </p>
+            <p class="text-gray-900 font-semibold text-lg mb-2">
+                Your unique User ID is: <span id="success-user-id" class="font-normal text-sm break-all"></span>
+            </p>
+            <p class="text-gray-900 font-semibold text-lg mb-6">
+                Your Appointment ID is: <span id="success-appointment-id" class="font-normal text-sm break-all"></span>
+            </p>
+            <p class="text-gray-900 font-semibold text-lg mb-6">
+                Thank you. Please arrive a few minutes earlier than your set appointment time.
+            </p>
+            <button id="close-success-button" class="bg-yellow-400 text-dark-blue font-bold py-2 px-6 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">
+                Close
+            </button>
+        </div>
     </div>
-  </div>
 
-  <!-- Form -->
-  <main id="appointment-main" class="container mx-auto p-8 hidden">
-    <form id="appointmentForm" class="bg-white p-6 rounded-lg shadow space-y-4">
-      <input type="text" name="firstName" placeholder="First Name*" required class="border p-2 rounded w-full" />
-      <input type="text" name="lastName" placeholder="Last Name*" required class="border p-2 rounded w-full" />
-      <input type="number" name="age" placeholder="Age*" required class="border p-2 rounded w-full" />
-      <select name="sex" required class="border p-2 rounded w-full">
-        <option value="">--Sex--</option>
-        <option>Male</option>
-        <option>Female</option>
-      </select>
-      <input type="email" name="email" placeholder="Email*" required class="border p-2 rounded w-full" />
-      <input type="tel" name="phone" placeholder="Phone*" required class="border p-2 rounded w-full" />
-      <textarea name="specificDetails" placeholder="Specific Details*" required class="border p-2 rounded w-full"></textarea>
-      <input type="date" name="preferredDate" id="preferredDate" required class="border p-2 rounded w-full" />
-      <select name="preferredTime" required class="border p-2 rounded w-full">
-        <option value="">--Time--</option>
-        <option value="08:00">8:00 AM</option>
-        <option value="09:00">9:00 AM</option>
-      </select>
-      <button type="submit" class="bg-yellow-400 px-6 py-2 rounded-full font-bold w-full">Confirm</button>
-    </form>
-  </main>
+    <!-- Header Section -->
+    <header class="w-full header-bg shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="logo-shadow rounded-full p-2 bg-white flex items-center justify-center">
+                    <img src="" alt="City Health Office Logo" class="rounded-full w-12 h-12">
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
+                </div>
+            </div>
+            <nav class="flex items-center space-x-4">
+                <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">HOME</a>
+                <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">ABOUT</a>
+                <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">SERVICES</a>
+                <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">CONTACT</a>
+            </nav>
+        </div>
+        <div class="w-full h-2 header-bg-dark"></div>
+    </header>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Appointment View -->
+    <main id="appointment-main" class="container mx-auto p-8 flex-grow hidden">
+        <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-dark-blue">Set Appointment</h2>
+        <!-- Validation Message Box -->
+        <div id="validation-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
+            <span class="block sm:inline">Please fill in all the required fields.</span>
+        </div>
+        <!-- General Message Box -->
+        <div id="general-message" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
+            <span id="general-message-text" class="block sm:inline"></span>
+        </div>
+        <div class="form-card max-w-2xl mx-auto">
+            <form id="appointmentForm">
+                <!-- Step 1: Personal Information -->
+                <div id="step-1" class="space-y-6">
+                    <h3 class="text-xl font-semibold text-dark-blue">Step 1: Personal Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Last Name -->
+                        <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                            <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name*</label>
+                            <input type="text" id="lastName" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- First Name -->
+                        <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                            <label for="firstName" class="block text-sm font-medium text-gray-700">First Name*</label>
+                            <input type="text" id="firstName" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Middle Name -->
+                        <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                            <label for="middleName" class="block text-sm font-medium text-gray-700">Middle Name</label>
+                            <input type="text" id="middleName" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Age -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="age" class="block text-sm font-medium text-gray-700">Age*</label>
+                            <input type="number" id="age" name="age" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Sex -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="sex" class="block text-sm font-medium text-gray-700">Sex*</label>
+                            <select id="sex" name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">--SELECT--</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <!-- Email -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
+                            <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Phone Number -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number*</label>
+                            <input type="tel" id="phone" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Services -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="services" class="block text-sm font-medium text-gray-700">SERVICES*</label>
+                            <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">--SELECT--</option>
+                                <option value="checkup">General Consultation</option>
+                                <option value="vaccination">Vaccination</option>
+                                <option value="dental">Dental Services</option>
+                            </select>
+                        </div>
+                        <!-- Health Center -->
+                        <div class="col-span-1 md:col-span-1">
+                            <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
+                            <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">--SELECT--</option>
+                                <option value="tunasan">TUNASAN HEALTH CENTER</option>
+                                <option value="victoria">VICTORIA HEALTH CENTER</option>
+                                <option value="laguerta">LAGUERTA HEALTH CENTER</option>
+                                <option value="poblacion">POBLACION HEALTH CENTER</option>
+                                <option value="southville">SOUTHVILLE HEALTH CENTER</option>
+                                <option value="putatan">PUTATAN HEALTH CENTER</option>
+                                <option value="putatan_annex">PUTATAN ANNEX HEALTH CENTER</option>
+                                <option value="lakeview">LAKEVIEW HEALTH CENTER</option>
+                                <option value="bayan_main">BAYANAN MAIN HEALTH CENTER</option>
+                                <option value="alabang">ALABANG HEALTH CENTER</option>
+                                <option value="ayala_alabang">AYALA ALABANG HEALTH CENTER</option>
+                                <option value="cupang">CUPANG HEALTH CENTER</option>
+                                <option value="sitio_sto_nino">SITIO STO. NINO HEALTH CENTER</option>
+                                <option value="buli">BULI HEALTH CENTER</option>
+                                <option value="sucat">SUCAT HEALTH CENTER</option>
+                                <option value="bagong_silang">BAGONG SILANG HEALTH CENTER</option>
+                            </select>
+                        </div>
+                        <!-- Specific Details -->
+                        <div class="col-span-full">
+                            <label for="specificDetails" class="block text-sm font-medium text-gray-700">Specific Details*</label>
+                            <textarea id="specificDetails" name="specificDetails" rows="4" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="e.g., Please describe your symptoms or the reason for your appointment in detail."></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-center">
+                        <button id="next-button" type="button" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">Next</button>
+                    </div>
+                </div>
 
-    // 🔥 Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
-      authDomain: "cho-clinic.firebaseapp.com",
-      databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "cho-clinic",
-      storageBucket: "cho-clinic.firebasestorage.app",
-      messagingSenderId: "1078609107976",
-      appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
-      measurementId: "G-FHE4TNMD0X"
-    };
+                <!-- Step 2: Date and Time -->
+                <div id="step-2" class="hidden space-y-6">
+                    <h3 class="text-xl font-semibold text-dark-blue">Step 2: Preferred Date and Time</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Preferred Date -->
+                        <div class="col-span-1">
+                            <label for="preferredDate" class="block text-sm font-medium text-gray-700">Preferred Date*</label>
+                            <input type="date" id="preferredDate" name="preferredDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <!-- Preferred Time -->
+                        <div class="col-span-1">
+                            <label for="preferredTime" class="block text-sm font-medium text-gray-700">Preferred Time*</label>
+                            <select id="preferredTime" name="preferredTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="" disabled selected>--SELECT--</option>
+                                <option value="08:00">8:00 AM</option>
+                                <option value="08:30">8:30 AM</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="09:30">9:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="12:30">12:30 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="13:30">1:30 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="15:30">3:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="16:30">4:30 PM</option>
+                                <option value="17:00">5:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-between">
+                        <button id="back-button" type="button" class="bg-gray-400 text-dark-blue font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-500 transition transform hover:scale-105">Back</button>
+                        <button id="review-button" type="button" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">Review</button>
+                    </div>
+                </div>
 
-    // ✅ Initialize
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    let userId = null;
+                <!-- Step 3: Confirmation -->
+                <div id="step-3" class="hidden space-y-6">
+                    <h3 class="text-xl font-semibold text-dark-blue">Step 3: Confirm Your Details</h3>
+                    <div class="bg-gray-100 p-6 rounded-lg space-y-4">
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Name:</p>
+                            <p id="confirmName" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Age:</p>
+                            <p id="confirmAge" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Sex:</p>
+                            <p id="confirmSex" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Email:</p>
+                            <p id="confirmEmail" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Phone Number:</p>
+                            <p id="confirmPhone" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Service:</p>
+                            <p id="confirmService" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Health Center:</p>
+                            <p id="confirmHealthCenter" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Preferred Date:</p>
+                            <p id="confirmDate" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:space-x-4">
+                            <p class="font-bold text-gray-700 w-full md:w-1/2">Preferred Time:</p>
+                            <p id="confirmTime" class="text-gray-900 w-full md:w-1/2"></p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-700">Specific Details:</p>
+                            <p id="confirmDetails" class="text-gray-900 mt-2 p-4 bg-gray-200 rounded-md"></p>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-between">
+                        <button id="edit-button" type="button" class="bg-gray-400 text-dark-blue font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-500 transition transform hover:scale-105">Edit</button>
+                        <button type="submit" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">Confirm Submission</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
 
-    const form = document.getElementById("appointmentForm");
+    <!-- Footer Section -->
+    <footer class="w-full header-bg py-4 mt-auto shadow-inner">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <p class="text-sm text-dark-blue font-semibold">CITY HEALTH OFFICE</p>
+        </div>
+    </footer>
 
-    // Disable form until Firebase ready
-    function toggleForm(enabled) {
-      form.querySelectorAll("input, select, textarea, button")
-        .forEach(el => el.disabled = !enabled);
-    }
-    toggleForm(false);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, addDoc, collection, setDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Sign in anonymously
-    signInAnonymously(auth).catch(err => console.error("Auth error:", err));
+        // IMPORTANT: Use this block to ensure all Firebase services are initialized.
+        setLogLevel('Debug');
 
-    // Wait for login before enabling form
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        userId = user.uid;
-        console.log("✅ Signed in:", userId);
-        toggleForm(true);
-      }
-    });
+        let db, auth, userId;
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    // Privacy modal
-    document.getElementById("agree-button").addEventListener("click", () => {
-      document.getElementById("privacy-modal").classList.add("hidden");
-      document.getElementById("appointment-main").classList.remove("hidden");
-    });
+        if (Object.keys(firebaseConfig).length > 0) {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // This is the key change. We now just sign in anonymously.
+            // This guarantees that a user ID will be created and set.
+            signInAnonymously(auth).catch(error => {
+                console.error("Anonymous sign-in failed:", error);
+            });
 
-    // Success modal close
-    document.getElementById("close-success-button").addEventListener("click", () => {
-      document.getElementById("success-modal").classList.add("hidden");
-      form.reset();
-    });
+            // The onAuthStateChanged listener will handle setting the userId
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("Authenticated with user ID:", userId);
+                } else {
+                    console.log("No user is signed in.");
+                }
+            });
+        }
 
-    // Set min date = tomorrow
-    const preferredDateInput = document.getElementById("preferredDate");
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-    preferredDateInput.min = tomorrow.toISOString().split("T")[0];
+        // Wait for the DOM to be fully loaded before attaching event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const privacyModal = document.getElementById('privacy-modal');
+            const successModal = document.getElementById('success-modal');
+            const appointmentMain = document.getElementById('appointment-main');
+            const agreeButton = document.getElementById('agree-button');
+            const closeSuccessButton = document.getElementById('close-success-button');
+            const nextButton = document.getElementById('next-button');
+            const backButton = document.getElementById('back-button');
+            const reviewButton = document.getElementById('review-button');
+            const editButton = document.getElementById('edit-button');
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            const validationMessage = document.getElementById('validation-message');
+            const generalMessage = document.getElementById('general-message');
+            const generalMessageText = document.getElementById('general-message-text');
 
-    // Handle form submit
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+            const successUserIdSpan = document.getElementById('success-user-id');
+            const successAppointmentIdSpan = document.getElementById('success-appointment-id');
 
-      if (!userId) {
-        alert("⏳ Please wait, Firebase is still signing you in.");
-        return;
-      }
+            function showMessage(message, type = 'info') {
+                generalMessageText.textContent = message;
+                generalMessage.classList.remove('hidden', 'bg-red-100', 'border-red-400', 'text-red-700', 'bg-green-100', 'border-green-400', 'text-green-700');
+                if (type === 'error') {
+                    generalMessage.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                } else if (type === 'success') {
+                    generalMessage.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                } else {
+                    generalMessage.classList.add('bg-yellow-100', 'border-yellow-400', 'text-yellow-700');
+                }
+                generalMessage.classList.remove('hidden');
+            }
 
-      try {
-        const data = Object.fromEntries(new FormData(form).entries());
-        data.userId = userId;
+            function hideMessage() {
+                generalMessage.classList.add('hidden');
+            }
 
-        const docRef = await addDoc(collection(db, "appointments"), data);
+            // Set the minimum date for the date picker to tomorrow
+            const preferredDateInput = document.getElementById('preferredDate');
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            const minDate = `${yyyy}-${mm}-${dd}`;
+            preferredDateInput.setAttribute('min', minDate);
 
-        document.getElementById("success-user-id").textContent = userId;
-        document.getElementById("success-appointment-id").textContent = docRef.id;
-        document.getElementById("success-modal").classList.remove("hidden");
-      } catch (err) {
-        console.error("Error saving:", err);
-        alert("Error saving appointment. Try again.");
-      }
-    });
-  </script>
+            // Event listeners
+            agreeButton.addEventListener('click', function() {
+                console.log("Agree button clicked.");
+                privacyModal.classList.add('hidden');
+                appointmentMain.classList.remove('hidden');
+            });
+
+            closeSuccessButton.addEventListener('click', function() {
+                successModal.classList.add('hidden');
+                document.getElementById('appointmentForm').reset();
+                step3.classList.add('hidden');
+                step1.classList.remove('hidden');
+            });
+
+            function validateStep(stepElement) {
+                const requiredInputs = stepElement.querySelectorAll('[required]');
+                let allValid = true;
+                requiredInputs.forEach(input => {
+                    input.classList.remove('border-red-500');
+                    if (!input.checkValidity()) {
+                        allValid = false;
+                        input.classList.add('border-red-500');
+                    }
+                });
+                return allValid;
+            }
+
+            function populateConfirmation() {
+                const form = document.getElementById('appointmentForm');
+                const data = {
+                    firstName: form.firstName.value,
+                    lastName: form.lastName.value,
+                    middleName: form.middleName.value,
+                    age: form.age.value,
+                    sex: form.sex.options[form.sex.selectedIndex].text,
+                    email: form.email.value,
+                    phone: form.phone.value,
+                    services: form.services.options[form.services.selectedIndex].text,
+                    healthCenter: form.healthCenter.options[form.healthCenter.selectedIndex].text,
+                    specificDetails: form.specificDetails.value,
+                    preferredDate: form.preferredDate.value,
+                    preferredTime: form.preferredTime.options[form.preferredTime.selectedIndex].text,
+                };
+
+                document.getElementById('confirmName').textContent = `${data.firstName} ${data.middleName} ${data.lastName}`;
+                document.getElementById('confirmAge').textContent = data.age;
+                document.getElementById('confirmSex').textContent = data.sex;
+                document.getElementById('confirmEmail').textContent = data.email;
+                document.getElementById('confirmPhone').textContent = data.phone;
+                document.getElementById('confirmService').textContent = data.services;
+                document.getElementById('confirmHealthCenter').textContent = data.healthCenter;
+                document.getElementById('confirmDate').textContent = data.preferredDate;
+                document.getElementById('confirmTime').textContent = data.preferredTime;
+                document.getElementById('confirmDetails').textContent = data.specificDetails;
+            }
+
+            nextButton.addEventListener('click', function() {
+                if (validateStep(step1)) {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    validationMessage.classList.add('hidden');
+                    hideMessage();
+                } else {
+                    validationMessage.classList.remove('hidden');
+                }
+            });
+
+            backButton.addEventListener('click', function() {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                validationMessage.classList.add('hidden');
+                hideMessage();
+            });
+
+            reviewButton.addEventListener('click', function() {
+                if (validateStep(step2)) {
+                    populateConfirmation();
+                    step2.classList.add('hidden');
+                    step3.classList.remove('hidden');
+                    validationMessage.classList.add('hidden');
+                    hideMessage();
+                } else {
+                    validationMessage.classList.remove('hidden');
+                }
+            });
+
+            editButton.addEventListener('click', function() {
+                step3.classList.add('hidden');
+                step1.classList.remove('hidden');
+                validationMessage.classList.add('hidden');
+                hideMessage();
+            });
+
+            document.getElementById('appointmentForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                hideMessage();
+                validationMessage.classList.add('hidden');
+            
+                // Check if Firebase and user are ready before attempting to submit
+                if (!db || !userId) {
+                    const message = "The application is still initializing. Please wait a moment and try again.";
+                    showMessage(message, 'error');
+                    console.error("Firebase not ready. Cannot submit appointment.");
+                    return;
+                }
+
+                try {
+                    const formData = new FormData(event.target);
+                    const data = Object.fromEntries(formData.entries());
+                    data.userId = userId;
+
+                    // Create a collection path based on the selected health center
+                    const healthCenter = data.healthCenter;
+                    const collectionName = `${healthCenter}_appointments`;
+                    const collectionPath = `artifacts/${appId}/public/data/${collectionName}`;
+
+                    const docRef = await addDoc(collection(db, collectionPath), data);
+                    
+                    // Display the user and appointment IDs in the success modal
+                    successUserIdSpan.textContent = userId;
+                    successAppointmentIdSpan.textContent = docRef.id;
+
+                    successModal.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Error submitting appointment:", error);
+                    showMessage("There was an error submitting your appointment. Please try again.", 'error');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

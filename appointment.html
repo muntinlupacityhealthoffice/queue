@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment - CHO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans">
+
+  <!-- Header -->
+  <header class="bg-yellow-400 shadow">
+    <div class="container mx-auto flex items-center justify-between px-6 py-3">
+      <!-- Logo + Title -->
+      <div class="flex items-center space-x-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6a/Rod_of_asclepius2.png" 
+             alt="Logo" class="w-14 h-14 rounded-full border border-gray-300">
+        <h1 class="text-2xl font-extrabold text-blue-800">CITY HEALTH OFFICE</h1>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Division -->
+  <div class="container mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-blue-900 text-center">Book an Appointment</h2>
+    <p class="text-gray-600 text-center mt-2">Fill in the form below to schedule your visit.</p>
+    
+    <!-- Confirmation Message -->
+    <div id="confirmationBox" class="hidden max-w-2xl mx-auto mt-6 p-4 bg-green-100 text-green-800 border border-green-300 rounded-lg shadow-md"></div>
+
+    <form id="appointmentForm" class="bg-white max-w-2xl mx-auto mt-6 p-8 rounded-lg shadow-lg border border-blue-200" onsubmit="return validateForm()">
+
+      <!-- Step 1: Personal Info -->
+      <div id="step1" class="form-step">
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <label class="block">
+            <span class="text-gray-700">Last Name *</span>
+            <input type="text" id="lastName" class="mt-1 w-full p-3 border rounded" required>
+          </label>
+          <label class="block">
+            <span class="text-gray-700">First Name *</span>
+            <input type="text" id="firstName" class="mt-1 w-full p-3 border rounded" required>
+          </label>
+          <label class="block">
+            <span class="text-gray-700">Middle Name</span>
+            <input type="text" id="middleName" class="mt-1 w-full p-3 border rounded">
+          </label>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <label class="block">
+            <span class="text-gray-700">Age *</span>
+            <input type="number" id="age" min="0" class="mt-1 w-full p-3 border rounded" required>
+          </label>
+
+          <label class="block">
+            <span class="text-gray-700">Sex *</span>
+            <select id="sex" class="mt-1 w-full p-3 border rounded" required>
+              <option value="">-- Select --</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Prefer not to say</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="block mb-4">
+          <span class="text-gray-700">Email (Optional)</span>
+          <input type="email" id="email" class="mt-1 w-full p-3 border rounded">
+        </label>
+
+        <label class="block mb-6">
+          <span class="text-gray-700">Phone *</span>
+          <input type="tel" id="phone" class="mt-1 w-full p-3 border rounded" required>
+        </label>
+
+        <div class="mb-6">
+          <label class="block mb-3">
+            <span class="text-gray-700">Symptoms Category *</span>
+            <select id="symptomsCategory" class="mt-1 w-full p-3 border rounded" required>
+              <option value="">-- Select a Category --</option>
+              <option>Fever</option>
+              <option>Cough/Colds</option>
+              <option>Checkup</option>
+              <option>Skin Issue</option>
+              <option>Injury</option>
+              <option>Other</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="text-gray-700">Specific Details (Optional)</span>
+            <textarea id="details" class="mt-1 w-full p-3 border rounded" rows="4" placeholder="Add more details if needed..."></textarea>
+          </label>
+        </div>
+
+        <!-- Next Button -->
+        <button type="button" onclick="nextStep()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-yellow-500 transition duration-300">
+          Next
+        </button>
+      </div>
+
+      <!-- Step 2: Date & Time -->
+      <div id="step2" class="form-step hidden">
+        <label class="block mb-4">
+          <span class="text-gray-700">Preferred Date *</span>
+          <input type="date" id="date" class="mt-1 w-full p-3 border rounded" required onchange="updateTimeOptions()">
+        </label>
+
+        <label class="block mb-6">
+          <span class="text-gray-700">Preferred Time *</span>
+          <select id="time" class="mt-1 w-full p-3 border rounded" required>
+            <option value="">-- Select a Time --</option>
+          </select>
+        </label>
+
+        <!-- Back + Submit Buttons -->
+        <div class="flex justify-between">
+          <button type="button" onclick="prevStep()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition duration-300">
+            Back
+          </button>
+          <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition duration-300">
+            Submit
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+  const allTimes = [
+    "6:00 AM","7:00 AM","8:00 AM","9:00 AM","10:00 AM",
+    "11:00 AM","12:00 PM","1:00 PM","2:00 PM",
+    "3:00 PM","4:00 PM","5:00 PM"
+  ];
+
+  function nextStep() {
+    const requiredStep1 = ["lastName", "firstName", "age", "sex", "phone", "symptomsCategory"];
+    for (let id of requiredStep1) {
+      if (!document.getElementById(id).value.trim()) {
+        alert("Please fill in all required fields before proceeding.");
+        return;
+      }
+    }
+    document.getElementById("step1").classList.add("hidden");
+    document.getElementById("step2").classList.remove("hidden");
+
+    const dateInput = document.getElementById("date");
+    const today = new Date();
+    today.setDate(today.getDate() + 1);
+    dateInput.min = today.toISOString().split("T")[0];
+  }
+
+  function prevStep() {
+    document.getElementById("step2").classList.add("hidden");
+    document.getElementById("step1").classList.remove("hidden");
+  }
+
+  function updateTimeOptions() {
+    const timeSelect = document.getElementById("time");
+    timeSelect.innerHTML = `<option value="">-- Select a Time --</option>`;
+    allTimes.forEach(t => {
+      let option = document.createElement("option");
+      option.value = t;
+      option.textContent = t;
+      timeSelect.appendChild(option);
+    });
+  }
+
+  // ✅ Firebase integration with overlap check
+  function validateForm() {
+    const date = document.getElementById("date").value.trim();
+    const time = document.getElementById("time").value.trim();
+
+    if (!date || !time) {
+      alert("Please select a date and time before submitting.");
+      return false;
+    }
+
+    const appointmentData = {
+      lastName: document.getElementById("lastName").value.trim(),
+      firstName: document.getElementById("firstName").value.trim(),
+      middleName: document.getElementById("middleName").value.trim(),
+      age: document.getElementById("age").value.trim(),
+      sex: document.getElementById("sex").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      symptomsCategory: document.getElementById("symptomsCategory").value.trim(),
+      details: document.getElementById("details").value.trim(),
+      date,
+      time,
+      timestamp: new Date().toISOString()
+    };
+
+    // 🔎 Step 1: Check existing appointments for that date
+    fetch("https://clinic-for-cho-queue-default-rtdb.asia-southeast1.firebasedatabase.app/appointments.json")
+      .then(res => res.json())
+      .then(data => {
+        let alreadyBooked = false;
+        let queueNumber = 1; // default first
+
+        if (data) {
+          const appointments = Object.values(data);
+          const sameDateAppointments = appointments.filter(a => a.date === date);
+
+          // check if same time already taken
+          alreadyBooked = sameDateAppointments.some(a => a.time === time);
+
+          // queue number = next number for that date
+          queueNumber = sameDateAppointments.length + 1;
+        }
+
+        if (alreadyBooked) {
+          alert("This time slot is already booked. Please choose another.");
+          return;
+        }
+
+        // 🔎 Step 2: Save appointment since it's available
+        fetch("https://clinic-for-cho-queue-default-rtdb.asia-southeast1.firebasedatabase.app/appointments.json", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...appointmentData, queueNumber })
+        })
+        .then(res => res.json())
+        .then(() => {
+          const confirmationBox = document.getElementById("confirmationBox");
+          confirmationBox.innerHTML = `
+            <strong>Appointment submitted successfully!</strong><br>
+            Your <b>Queue Number:</b> ${queueNumber}<br>
+            <b>Date:</b> ${appointmentData.date}<br>
+            <b>Time:</b> ${appointmentData.time}
+          `;
+          confirmationBox.classList.remove("hidden");
+
+          document.getElementById("appointmentForm").reset();
+          prevStep();
+        })
+        .catch(err => {
+          alert("Error submitting appointment. Please try again.");
+          console.error(err);
+        });
+
+      })
+      .catch(err => {
+        alert("Error checking existing appointments. Please try again.");
+        console.error(err);
+      });
+
+    return false; 
+  }
+</script>
+
+</body>
+</html>
+
+

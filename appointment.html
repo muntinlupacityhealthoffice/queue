@@ -128,6 +128,10 @@
         <div id="validation-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
             <span class="block sm:inline">Please fill in all the required fields.</span>
         </div>
+        <!-- General Message Box -->
+        <div id="general-message" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
+            <span id="general-message-text" class="block sm:inline"></span>
+        </div>
         <div class="form-card max-w-2xl mx-auto">
             <form id="appointmentForm">
                 <!-- Step 1: Personal Information -->
@@ -372,9 +376,28 @@
             const step2 = document.getElementById('step-2');
             const step3 = document.getElementById('step-3');
             const validationMessage = document.getElementById('validation-message');
+            const generalMessage = document.getElementById('general-message');
+            const generalMessageText = document.getElementById('general-message-text');
 
             const successUserIdSpan = document.getElementById('success-user-id');
             const successAppointmentIdSpan = document.getElementById('success-appointment-id');
+
+            function showMessage(message, type = 'info') {
+                generalMessageText.textContent = message;
+                generalMessage.classList.remove('hidden', 'bg-red-100', 'border-red-400', 'text-red-700', 'bg-green-100', 'border-green-400', 'text-green-700');
+                if (type === 'error') {
+                    generalMessage.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                } else if (type === 'success') {
+                    generalMessage.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                } else {
+                    generalMessage.classList.add('bg-yellow-100', 'border-yellow-400', 'text-yellow-700');
+                }
+                generalMessage.classList.remove('hidden');
+            }
+
+            function hideMessage() {
+                generalMessage.classList.add('hidden');
+            }
 
             // Set the minimum date for the date picker to tomorrow
             const preferredDateInput = document.getElementById('preferredDate');
@@ -448,6 +471,7 @@
                     step1.classList.add('hidden');
                     step2.classList.remove('hidden');
                     validationMessage.classList.add('hidden');
+                    hideMessage();
                 } else {
                     validationMessage.classList.remove('hidden');
                 }
@@ -457,6 +481,7 @@
                 step2.classList.add('hidden');
                 step1.classList.remove('hidden');
                 validationMessage.classList.add('hidden');
+                hideMessage();
             });
 
             reviewButton.addEventListener('click', function() {
@@ -465,6 +490,7 @@
                     step2.classList.add('hidden');
                     step3.classList.remove('hidden');
                     validationMessage.classList.add('hidden');
+                    hideMessage();
                 } else {
                     validationMessage.classList.remove('hidden');
                 }
@@ -474,18 +500,19 @@
                 step3.classList.add('hidden');
                 step1.classList.remove('hidden');
                 validationMessage.classList.add('hidden');
+                hideMessage();
             });
 
             document.getElementById('appointmentForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
+                hideMessage();
                 validationMessage.classList.add('hidden');
-
-                if (!db) {
-                    console.error("Firestore is not initialized.");
-                    return;
-                }
-                if (!userId) {
-                    console.error("User not authenticated. Cannot submit appointment.");
+            
+                // Check if Firebase and user are ready before attempting to submit
+                if (!db || !userId) {
+                    const message = "The application is still initializing. Please wait a moment and try again.";
+                    showMessage(message, 'error');
+                    console.error("Firebase not ready. Cannot submit appointment.");
                     return;
                 }
 
@@ -508,7 +535,7 @@
                     successModal.classList.remove('hidden');
                 } catch (error) {
                     console.error("Error submitting appointment:", error);
-                    // You could add a user-facing error message here
+                    showMessage("There was an error submitting your appointment. Please try again.", 'error');
                 }
             });
         });

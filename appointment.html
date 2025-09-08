@@ -2,263 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Set Appointment</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f0f4f8;
-    }
-    .header-bg {
-      background-color: #ffd700;
-      background-image: linear-gradient(to right, #ffd700, #ffeb3b);
-    }
-    .header-bg-dark { background-color: #1a237e; }
-    .text-dark-blue { color: #1a237e; }
-    .logo-shadow {
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .form-card {
-      background-color: #fff;
-      border-radius: 1rem;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);
-      padding: 2rem;
-    }
-    .border-red-500 { border-color:#ef4444; }
-    .modal {
-      background-color: rgba(0,0,0,0.5);
-      backdrop-filter: blur(5px);
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      z-index:1000;
-    }
-    .modal-content {
-      background:#fff;
-      padding:2.5rem;
-      border-radius:1rem;
-      max-width:28rem;
-      text-align:center;
-      box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);
-      animation:fadeIn .3s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from {opacity:0; transform:scale(0.95);}
-      to {opacity:1; transform:scale(1);}
-    }
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
+    .modal { background: rgba(0,0,0,.5); position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 2rem; border-radius: 1rem; max-width: 28rem; text-align: center; }
+    .border-red-500 { border-color: #ef4444; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<body class="min-h-screen flex flex-col">
 
   <!-- Privacy Notice Modal -->
   <div id="privacy-modal" class="modal">
     <div class="modal-content">
-      <h3 class="text-2xl font-bold text-dark-blue mb-4">Privacy Notice</h3>
-      <p class="text-sm text-gray-700 mb-6 leading-relaxed">
-        By providing your personal information, you consent to its collection and use by the City Health Office for the purpose of setting and managing your health appointments, in compliance with the Philippine Data Privacy Act of 2012 (R.A. 10173). We will ensure the confidentiality and security of your data and will not share it with any unauthorized third parties.
-      </p>
-      <button id="agree-button" class="bg-yellow-400 text-dark-blue font-bold py-2 px-6 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">
-        I Agree
-      </button>
+      <h3 class="text-xl font-bold text-blue-900 mb-2">Privacy Notice</h3>
+      <p class="text-sm text-gray-700 mb-4">By providing your info, you consent to its use by the City Health Office in compliance with RA 10173.</p>
+      <button id="agree-button" class="bg-yellow-400 px-6 py-2 rounded-full font-bold">I Agree</button>
     </div>
   </div>
 
   <!-- Success Modal -->
   <div id="success-modal" class="modal hidden">
     <div class="modal-content">
-      <h3 class="text-2xl font-bold text-green-600 mb-4">Appointment Confirmed!</h3>
-      <p class="text-gray-700 mb-4">
-        Your appointment has been successfully scheduled and stored.
-      </p>
-      <p class="text-gray-900 font-semibold text-lg mb-2">
-        Your unique User ID is: <span id="success-user-id" class="font-normal text-sm break-all"></span>
-      </p>
-      <p class="text-gray-900 font-semibold text-lg mb-6">
-        Your Appointment ID is: <span id="success-appointment-id" class="font-normal text-sm break-all"></span>
-      </p>
-      <p class="text-gray-900 font-semibold text-lg mb-6">
-        Thank you. Please arrive a few minutes earlier than your set appointment time.
-      </p>
-      <button id="close-success-button" class="bg-yellow-400 text-dark-blue font-bold py-2 px-6 rounded-full shadow-lg hover:bg-yellow-500 transition transform hover:scale-105">
-        Close
-      </button>
+      <h3 class="text-xl font-bold text-green-600 mb-2">Appointment Confirmed!</h3>
+      <p class="mb-2">Your appointment has been stored.</p>
+      <p class="font-semibold">User ID: <span id="success-user-id" class="font-normal"></span></p>
+      <p class="font-semibold mb-4">Appointment ID: <span id="success-appointment-id" class="font-normal"></span></p>
+      <button id="close-success-button" class="bg-yellow-400 px-6 py-2 rounded-full font-bold">Close</button>
     </div>
   </div>
 
-  <!-- Header -->
-  <header class="w-full header-bg shadow-lg">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <div class="logo-shadow rounded-full p-2 bg-white flex items-center justify-center">
-          <img src="" alt="City Health Office Logo" class="rounded-full w-12 h-12"/>
-        </div>
-        <div>
-          <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
-        </div>
-      </div>
-      <nav class="flex items-center space-x-4">
-        <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">HOME</a>
-        <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">ABOUT</a>
-        <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">SERVICES</a>
-        <a href="#" class="font-semibold text-dark-blue hover:text-blue-700">CONTACT</a>
-      </nav>
-    </div>
-    <div class="w-full h-2 header-bg-dark"></div>
-  </header>
-
-  <!-- Appointment Form -->
-  <main id="appointment-main" class="container mx-auto p-8 flex-grow hidden">
-    <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-dark-blue">Set Appointment</h2>
-    <div id="validation-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative max-w-2xl mx-auto mb-4" role="alert">
-      <span>Please fill in all the required fields.</span>
-    </div>
-    <div class="form-card max-w-2xl mx-auto">
-      <form id="appointmentForm">
-        <!-- Step 1 -->
-        <div id="step-1" class="space-y-6">
-          <h3 class="text-xl font-semibold text-dark-blue">Step 1: Personal Information</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div><label class="block text-sm font-medium text-gray-700">Last Name*</label>
-              <input type="text" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">First Name*</label>
-              <input type="text" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Middle Name</label>
-              <input type="text" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Age*</label>
-              <input type="number" name="age" min="0" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Sex*</label>
-              <select name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                <option value="">--SELECT--</option>
-                <option>Male</option><option>Female</option>
-              </select>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Email*</label>
-              <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Phone*</label>
-              <input type="tel" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Service*</label>
-              <select name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                <option value="">--SELECT--</option>
-                <option>General Consultation</option>
-                <option>Vaccination</option>
-                <option>Dental Services</option>
-              </select>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Health Center*</label>
-              <select name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                <option value="">--SELECT--</option>
-                <option>TUNASAN</option>
-                <option>VICTORIA</option>
-                <option>LAGUERTA</option>
-                <option>POBLACION</option>
-                <option>SOUTHVILLE</option>
-                <option>PUTATAN</option>
-                <option>PUTATAN ANNEX</option>
-                <option>LAKEVIEW</option>
-                <option>BAYANAN MAIN</option>
-                <option>ALABANG</option>
-                <option>AYALA ALABANG</option>
-                <option>CUPANG</option>
-                <option>SITIO STO. NINO</option>
-                <option>BULI</option>
-                <option>SUCAT</option>
-                <option>BAGONG SILANG</option>
-              </select>
-            </div>
-            <div class="col-span-full">
-              <label class="block text-sm font-medium text-gray-700">Details*</label>
-              <textarea name="specificDetails" rows="3" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-            </div>
-          </div>
-          <div class="mt-8 flex justify-center">
-            <button id="next-button" type="button" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full">Next</button>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div id="step-2" class="hidden space-y-6">
-          <h3 class="text-xl font-semibold text-dark-blue">Step 2: Preferred Date & Time</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div><label class="block text-sm font-medium text-gray-700">Date*</label>
-              <input type="date" id="preferredDate" name="preferredDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"/>
-            </div>
-            <div><label class="block text-sm font-medium text-gray-700">Time*</label>
-              <select name="preferredTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                <option value="">--SELECT--</option>
-                <option>8:00 AM</option><option>8:30 AM</option>
-                <option>9:00 AM</option><option>9:30 AM</option>
-                <option>10:00 AM</option><option>10:30 AM</option>
-                <option>11:00 AM</option><option>11:30 AM</option>
-                <option>12:00 PM</option><option>12:30 PM</option>
-                <option>1:00 PM</option><option>1:30 PM</option>
-                <option>2:00 PM</option><option>2:30 PM</option>
-                <option>3:00 PM</option><option>3:30 PM</option>
-                <option>4:00 PM</option><option>4:30 PM</option>
-                <option>5:00 PM</option>
-              </select>
-            </div>
-          </div>
-          <div class="mt-8 flex justify-between">
-            <button id="back-button" type="button" class="bg-gray-400 text-dark-blue font-bold py-3 px-8 rounded-full">Back</button>
-            <button id="review-button" type="button" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full">Review</button>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div id="step-3" class="hidden space-y-6">
-          <h3 class="text-xl font-semibold text-dark-blue">Step 3: Confirm</h3>
-          <div class="bg-gray-100 p-6 rounded-lg space-y-4">
-            <p><b>Name:</b> <span id="confirmName"></span></p>
-            <p><b>Age:</b> <span id="confirmAge"></span></p>
-            <p><b>Sex:</b> <span id="confirmSex"></span></p>
-            <p><b>Email:</b> <span id="confirmEmail"></span></p>
-            <p><b>Phone:</b> <span id="confirmPhone"></span></p>
-            <p><b>Service:</b> <span id="confirmService"></span></p>
-            <p><b>Health Center:</b> <span id="confirmHealthCenter"></span></p>
-            <p><b>Date:</b> <span id="confirmDate"></span></p>
-            <p><b>Time:</b> <span id="confirmTime"></span></p>
-            <p><b>Details:</b> <span id="confirmDetails"></span></p>
-          </div>
-          <div class="mt-8 flex justify-between">
-            <button id="edit-button" type="button" class="bg-gray-400 text-dark-blue font-bold py-3 px-8 rounded-full">Edit</button>
-            <button type="submit" class="bg-yellow-400 text-dark-blue font-bold py-3 px-8 rounded-full">Confirm Submission</button>
-          </div>
-        </div>
-      </form>
-    </div>
+  <!-- Form -->
+  <main id="appointment-main" class="container mx-auto p-8 hidden">
+    <form id="appointmentForm" class="bg-white p-6 rounded-lg shadow space-y-4">
+      <input type="text" name="firstName" placeholder="First Name*" required class="border p-2 rounded w-full" />
+      <input type="text" name="lastName" placeholder="Last Name*" required class="border p-2 rounded w-full" />
+      <input type="number" name="age" placeholder="Age*" required class="border p-2 rounded w-full" />
+      <select name="sex" required class="border p-2 rounded w-full">
+        <option value="">--Sex--</option>
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+      <input type="email" name="email" placeholder="Email*" required class="border p-2 rounded w-full" />
+      <input type="tel" name="phone" placeholder="Phone*" required class="border p-2 rounded w-full" />
+      <textarea name="specificDetails" placeholder="Specific Details*" required class="border p-2 rounded w-full"></textarea>
+      <input type="date" name="preferredDate" id="preferredDate" required class="border p-2 rounded w-full" />
+      <select name="preferredTime" required class="border p-2 rounded w-full">
+        <option value="">--Time--</option>
+        <option value="08:00">8:00 AM</option>
+        <option value="09:00">9:00 AM</option>
+      </select>
+      <button type="submit" class="bg-yellow-400 px-6 py-2 rounded-full font-bold w-full">Confirm</button>
+    </form>
   </main>
 
-  <!-- Footer -->
-  <footer class="w-full header-bg py-4 mt-auto shadow-inner">
-    <div class="container mx-auto px-4 flex items-center justify-center">
-      <p class="text-sm text-dark-blue font-semibold">CITY HEALTH OFFICE</p>
-    </div>
-  </footer>
-
-  <!-- Firebase + App Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, addDoc, collection, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Firebase config
+    // 🔥 Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
       authDomain: "cho-clinic.firebaseapp.com",
@@ -270,104 +76,72 @@
       measurementId: "G-FHE4TNMD0X"
     };
 
-    // Init Firebase
+    // ✅ Initialize
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    setLogLevel('debug');
-
     let userId = null;
 
+    const form = document.getElementById("appointmentForm");
+
+    // Disable form until Firebase ready
+    function toggleForm(enabled) {
+      form.querySelectorAll("input, select, textarea, button")
+        .forEach(el => el.disabled = !enabled);
+    }
+    toggleForm(false);
+
+    // Sign in anonymously
     signInAnonymously(auth).catch(err => console.error("Auth error:", err));
-    onAuthStateChanged(auth, (user) => { if(user) userId = user.uid; });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const privacyModal = document.getElementById('privacy-modal');
-      const appointmentMain = document.getElementById('appointment-main');
-      const agreeButton = document.getElementById('agree-button');
-      const nextButton = document.getElementById('next-button');
-      const backButton = document.getElementById('back-button');
-      const reviewButton = document.getElementById('review-button');
-      const editButton = document.getElementById('edit-button');
-      const successModal = document.getElementById('success-modal');
-      const closeSuccessButton = document.getElementById('close-success-button');
+    // Wait for login before enabling form
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userId = user.uid;
+        console.log("✅ Signed in:", userId);
+        toggleForm(true);
+      }
+    });
 
-      // Step elements
-      const step1 = document.getElementById('step-1');
-      const step2 = document.getElementById('step-2');
-      const step3 = document.getElementById('step-3');
+    // Privacy modal
+    document.getElementById("agree-button").addEventListener("click", () => {
+      document.getElementById("privacy-modal").classList.add("hidden");
+      document.getElementById("appointment-main").classList.remove("hidden");
+    });
 
-      // Confirm spans
-      const confirmName = document.getElementById('confirmName');
-      const confirmAge = document.getElementById('confirmAge');
-      const confirmSex = document.getElementById('confirmSex');
-      const confirmEmail = document.getElementById('confirmEmail');
-      const confirmPhone = document.getElementById('confirmPhone');
-      const confirmService = document.getElementById('confirmService');
-      const confirmHealthCenter = document.getElementById('confirmHealthCenter');
-      const confirmDate = document.getElementById('confirmDate');
-      const confirmTime = document.getElementById('confirmTime');
-      const confirmDetails = document.getElementById('confirmDetails');
+    // Success modal close
+    document.getElementById("close-success-button").addEventListener("click", () => {
+      document.getElementById("success-modal").classList.add("hidden");
+      form.reset();
+    });
 
-      const successUserIdSpan = document.getElementById('success-user-id');
-      const successAppointmentIdSpan = document.getElementById('success-appointment-id');
+    // Set min date = tomorrow
+    const preferredDateInput = document.getElementById("preferredDate");
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    preferredDateInput.min = tomorrow.toISOString().split("T")[0];
 
-      // Date picker min = tomorrow
-      const preferredDateInput = document.getElementById('preferredDate');
-      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-      preferredDateInput.min = tomorrow.toISOString().split("T")[0];
+    // Handle form submit
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-      // Privacy modal
-      agreeButton.addEventListener('click', () => {
-        privacyModal.classList.add('hidden');
-        appointmentMain.classList.remove('hidden');
-      });
+      if (!userId) {
+        alert("⏳ Please wait, Firebase is still signing you in.");
+        return;
+      }
 
-      // Step navigation
-      nextButton.addEventListener('click', () => {
-        if(!document.querySelector('#step-1 input:invalid, #step-1 select:invalid, #step-1 textarea:invalid')){
-          step1.classList.add('hidden'); step2.classList.remove('hidden');
-        } else alert("Please fill in all required fields.");
-      });
-      backButton.addEventListener('click', () => { step2.classList.add('hidden'); step1.classList.remove('hidden'); });
-      reviewButton.addEventListener('click', () => {
-        if(!document.querySelector('#step-2 input:invalid, #step-2 select:invalid')){
-          const formData = new FormData(document.getElementById('appointmentForm'));
-          confirmName.textContent = formData.get('firstName')+" "+formData.get('middleName')+" "+formData.get('lastName');
-          confirmAge.textContent = formData.get('age');
-          confirmSex.textContent = formData.get('sex');
-          confirmEmail.textContent = formData.get('email');
-          confirmPhone.textContent = formData.get('phone');
-          confirmService.textContent = formData.get('services');
-          confirmHealthCenter.textContent = formData.get('healthCenter');
-          confirmDate.textContent = formData.get('preferredDate');
-          confirmTime.textContent = formData.get('preferredTime');
-          confirmDetails.textContent = formData.get('specificDetails');
-          step2.classList.add('hidden'); step3.classList.remove('hidden');
-        } else alert("Please fill in all required fields.");
-      });
-      editButton.addEventListener('click', () => { step3.classList.add('hidden'); step1.classList.remove('hidden'); });
+      try {
+        const data = Object.fromEntries(new FormData(form).entries());
+        data.userId = userId;
 
-      // Submit
-      document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if(!db || !userId){ alert("Firebase not ready."); return; }
-        try {
-          const formData = new FormData(e.target);
-          const data = Object.fromEntries(formData.entries());
-          data.userId = userId;
-          const collectionName = `${data.healthCenter}_appointments`;
-          const docRef = await addDoc(collection(db, collectionName), data);
-          successUserIdSpan.textContent = userId;
-          successAppointmentIdSpan.textContent = docRef.id;
-          successModal.classList.remove('hidden');
-        } catch(err) {
-          console.error("Submit error:", err);
-        }
-      });
+        const docRef = await addDoc(collection(db, "appointments"), data);
 
-      closeSuccessButton.addEventListener('click', () => { successModal.classList.add('hidden'); });
+        document.getElementById("success-user-id").textContent = userId;
+        document.getElementById("success-appointment-id").textContent = docRef.id;
+        document.getElementById("success-modal").classList.remove("hidden");
+      } catch (err) {
+        console.error("Error saving:", err);
+        alert("Error saving appointment. Try again.");
+      }
     });
   </script>
 </body>

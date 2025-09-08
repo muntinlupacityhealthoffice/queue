@@ -480,11 +480,16 @@
                 event.preventDefault();
                 validationMessage.classList.add('hidden');
 
-                try {
-                    if (!userId) {
-                        throw new Error("User not authenticated.");
-                    }
+                if (!db) {
+                    console.error("Firestore is not initialized.");
+                    return;
+                }
+                if (!userId) {
+                    console.error("User not authenticated. Cannot submit appointment.");
+                    return;
+                }
 
+                try {
                     const formData = new FormData(event.target);
                     const data = Object.fromEntries(formData.entries());
                     data.userId = userId;

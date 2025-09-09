@@ -43,7 +43,26 @@
             justify-content: center;
             align-items: center;
         }
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem; /* smaller font for tables */
+        }
+        .appointment-table th, .appointment-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .appointment-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .appointment-table th:hover {
+            background-color: #f1f5f9;
+        }
     </style>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -78,12 +97,16 @@
     </footer>
 
     <div id="dataModal" class="modal">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-4xl w-full"> 
             <div class="flex justify-between items-center border-b pb-3 mb-3">
                 <h3 id="modalTitle" class="text-xl font-semibold text-dark-blue">Health Center Data</h3>
                 <button id="closeModal" class="text-gray-500 hover:text-gray-700 font-bold text-2xl">&times;</button>
             </div>
-            <div id="modalContent" class="max-h-96 overflow-y-auto">
+            <div class="mb-4 flex justify-between items-center">
+                <h4 class="text-md font-semibold text-gray-700">Appointment Details</h4>
+                <input id="tableSearchInput" type="text" placeholder="Search by name..." class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-1/2">
+            </div>
+            <div id="modalContent" class="max-h-[70vh] overflow-y-auto">
             </div>
         </div>
     </div>
@@ -113,114 +136,395 @@
             const modalTitle = document.getElementById('modalTitle');
             const modalContent = document.getElementById('modalContent');
             const closeModalButton = document.getElementById('closeModal');
+            const tableSearchInput = document.getElementById('tableSearchInput');
 
-            const healthCenters = [
-                'TUNASAN HEALTH CENTER',
-                'VICTORIA HEALTH CENTER',
-                'LAGUERTA HEALTH CENTER',
-                'POBLACION HEALTH CENTER',
-                'SOUTHVILLE HEALTH CENTER',
-                'PUTATAN HEALTH CENTER',
-                'PUTATAN ANNEX HEALTH CENTER',
-                'LAKEVIEW HEALTH CENTER',
-                'BAYANAN MAIN HEALTH CENTER',
-                'ALABANG HEALTH CENTER',
-                'AYALA ALABANG HEALTH CENTER',
-                'CUPANG HEALTH CENTER',
-                'SITIO STO. NINO HEALTH CENTER',
-                'BULI HEALTH CENTER',
-                'SUCAT HEALTH CENTER',
-                'BAGONG SILANG HEALTH CENTER',
+            const clinicDisplayNames = [
+                'TUNASAN', 'VICTORIA', 'LAGUERTA', 'POBLACION', 'SOUTHVILLE', 
+                'PUTATAN', 'PUTATAN ANNEX', 'LAKEVIEW', 'BAYANAN MAIN', 'ALABANG', 
+                'AYALA ALABANG', 'CUPANG', 'SITIO STO. NINO', 'BULI', 'SUCAT', 'BAGONG SILANG'
             ];
 
-            function createHealthCenterCard(centerName) {
+            const clinicMap = {
+                'TUNASAN': 'tunasan',
+                'VICTORIA': 'victoria',
+                'LAGUERTA': 'laguerta',
+                'POBLACION': 'poblacion',
+                'SOUTHVILLE': 'southville',
+                'PUTATAN': 'putatan',
+                'PUTATAN ANNEX': 'putatan_annex',
+                'LAKEVIEW': 'lakeview',
+                'BAYANAN MAIN': 'bayan_main',
+                'ALABANG': 'alabang',
+                'AYALA ALABANG': 'ayala_alabang',
+                'CUPANG': 'cupang',
+                'SITIO STO. NINO': 'sitio_sto_nino',
+                'BULI': 'buli',
+                'SUCAT': 'sucat',
+                'BAGONG SILANG': 'bagong_silang'
+            };
+
+            function createHealthCenterCard(clinicName) {
                 const card = document.createElement('div');
                 card.classList.add('bg-white', 'rounded-lg', 'shadow-md', 'p-6', 'flex', 'flex-col', 'items-center', 'text-center', 'transition', 'transform', 'hover:scale-105', 'hover:shadow-xl', 'cursor-pointer');
+                card.setAttribute('data-clinic-name', clinicName);
                 
                 const name = document.createElement('h3');
-                name.textContent = centerName;
+                name.textContent = clinicName;
                 name.classList.add('text-lg', 'font-semibold', 'text-dark-blue', 'mb-2');
                 card.appendChild(name);
 
+                const buttonContainer = document.createElement('div');
+                buttonContainer.classList.add('flex', 'space-x-2', 'mt-2');
+
                 const viewButton = document.createElement('button');
-                viewButton.textContent = 'View Appointments';
-                viewButton.classList.add('mt-2', 'px-4', 'py-2', 'rounded-full', 'font-semibold', 'button-bg', 'text-dark-blue', 'hover:bg-yellow-400', 'transition');
-                viewButton.addEventListener('click', () => {
-                    showModal(centerName);
+                viewButton.textContent = 'View & Edit Appointments';
+                viewButton.classList.add('view-btn', 'px-4', 'py-2', 'rounded-full', 'font-semibold', 'button-bg', 'text-dark-blue', 'hover:bg-yellow-400', 'transition');
+                viewButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showModal(clinicName);
                 });
-                card.appendChild(viewButton);
+                buttonContainer.appendChild(viewButton);
+
+                const disableButton = document.createElement('button');
+                disableButton.textContent = 'Disable';
+                disableButton.classList.add('disable-btn', 'px-4', 'py-2', 'rounded-full', 'font-semibold', 'bg-red-500', 'text-white', 'hover:bg-red-600', 'transition');
+                disableButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to disable ${clinicName}?`)) {
+                        disableClinic(clinicName, card);
+                    }
+                });
+                buttonContainer.appendChild(disableButton);
+
+                const enableButton = document.createElement('button');
+                enableButton.textContent = 'Enable';
+                enableButton.classList.add('enable-btn', 'hidden', 'px-4', 'py-2', 'rounded-full', 'font-semibold', 'bg-green-500', 'text-white', 'hover:bg-green-600', 'transition');
+                enableButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to enable ${clinicName}?`)) {
+                        enableClinic(clinicName, card);
+                    }
+                });
+                buttonContainer.appendChild(enableButton);
+
+                card.appendChild(buttonContainer);
                 
                 return card;
             }
 
             function renderHealthCenters(filter = '') {
                 healthCentersGrid.innerHTML = '';
-                const filteredCenters = healthCenters.filter(center => 
-                    center.toLowerCase().includes(filter.toLowerCase())
+                const filteredClinics = clinicDisplayNames.filter(name => 
+                    name.toLowerCase().includes(filter.toLowerCase())
                 );
                 
-                filteredCenters.forEach(center => {
-                    const card = createHealthCenterCard(center);
+                filteredClinics.forEach(name => {
+                    const card = createHealthCenterCard(name);
                     healthCentersGrid.appendChild(card);
+                    
+                    // Check clinic status from Firebase and update card appearance
+                    const databaseKey = clinicMap[name];
+                    const clinicStatusRef = database.ref(`clinics/${databaseKey}/status`);
+                    clinicStatusRef.once('value').then(snapshot => {
+                        if (snapshot.val() === 'Disabled') {
+                            updateCardStatus(card, 'Disabled');
+                        }
+                    });
                 });
             }
 
-            function showModal(centerName) {
-                modalTitle.textContent = `Appointments for ${centerName}`;
+            function updateCardStatus(card, status) {
+                const viewButton = card.querySelector('.view-btn');
+                const disableButton = card.querySelector('.disable-btn');
+                const enableButton = card.querySelector('.enable-btn');
+                
+                if (status === 'Disabled') {
+                    viewButton.classList.add('hidden');
+                    disableButton.classList.add('hidden');
+                    enableButton.classList.remove('hidden');
+                    card.classList.add('opacity-50');
+                } else {
+                    viewButton.classList.remove('hidden');
+                    disableButton.classList.remove('hidden');
+                    enableButton.classList.add('hidden');
+                    card.classList.remove('opacity-50');
+                }
+            }
+            
+            function disableClinic(clinicName, card) {
+                const databaseKey = clinicMap[clinicName];
+                database.ref(`clinics/${databaseKey}`).set({
+                    name: clinicName,
+                    status: 'Disabled'
+                }).then(() => {
+                    alert(`${clinicName} has been disabled.`);
+                    updateCardStatus(card, 'Disabled');
+                }).catch(error => {
+                    console.error("Error disabling clinic:", error);
+                    alert("Failed to disable clinic.");
+                });
+            }
+
+            function enableClinic(clinicName, card) {
+                const databaseKey = clinicMap[clinicName];
+                database.ref(`clinics/${databaseKey}`).set({
+                    name: clinicName,
+                    status: 'Enabled'
+                }).then(() => {
+                    alert(`${clinicName} has been enabled.`);
+                    updateCardStatus(card, 'Enabled');
+                }).catch(error => {
+                    console.error("Error enabling clinic:", error);
+                    alert("Failed to enable clinic.");
+                });
+            }
+
+            function showModal(clinicName) {
+                modalTitle.textContent = `Appointments for ${clinicName}`;
                 modalContent.innerHTML = `<p class="text-center text-gray-500">Loading appointments...</p>`;
                 dataModal.style.display = 'flex';
 
-                const databasePath = `appointments/${centerName}`;
+                const databaseKey = clinicMap[clinicName];
+                if (!databaseKey) {
+                    modalContent.innerHTML = `<p class="text-center text-red-500">Error: Database key not found for ${clinicName}.</p>`;
+                    return;
+                }
+
+                const databasePath = `appointments/${databaseKey}`;
                 const centerRef = database.ref(databasePath);
 
                 centerRef.on('value', (snapshot) => {
                     const data = snapshot.val();
-                    modalContent.innerHTML = ''; // Clear previous content
+                    modalContent.innerHTML = '';
 
                     if (data) {
-                        const appointmentsList = document.createElement('div');
-                        appointmentsList.classList.add('space-y-4');
-
+                        const allAppointments = [];
                         for (const date in data) {
                             if (data.hasOwnProperty(date)) {
                                 const dailyAppointments = data[date];
-                                
-                                const dateSection = document.createElement('div');
-                                dateSection.classList.add('border', 'border-gray-200', 'rounded-md', 'p-4');
-
-                                const dateHeading = document.createElement('h4');
-                                dateHeading.classList.add('font-bold', 'text-lg', 'text-dark-blue', 'mb-2');
-                                dateHeading.textContent = `Date: ${date}`;
-                                dateSection.appendChild(dateHeading);
-
-                                const dailyList = document.createElement('ul');
-                                dailyList.classList.add('list-disc', 'pl-5');
-
                                 for (const appointmentId in dailyAppointments) {
                                     if (dailyAppointments.hasOwnProperty(appointmentId)) {
                                         const appointment = dailyAppointments[appointmentId];
-                                        const listItem = document.createElement('li');
-                                        listItem.classList.add('text-gray-700');
-                                        listItem.innerHTML = `
-                                            <strong>Name:</strong> ${appointment.name}<br>
-                                            <strong>Time:</strong> ${appointment.time}<br>
-                                            <strong>Purpose:</strong> ${appointment.purpose}
-                                        `;
-                                        dailyList.appendChild(listItem);
+                                        allAppointments.push({
+                                            date: date,
+                                            id: appointmentId,
+                                            ...appointment
+                                        });
                                     }
                                 }
-                                dateSection.appendChild(dailyList);
-                                appointmentsList.appendChild(dateSection);
                             }
                         }
-                        modalContent.appendChild(appointmentsList);
+
+                        const table = document.createElement('table');
+                        table.classList.add('appointment-table', 'w-full');
+                        table.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th data-sort="name">Name</th>
+                                    <th data-sort="sex">Sex</th>
+                                    <th data-sort="category">Category</th>
+                                    <th data-sort="purpose">Purpose</th>
+                                    <th data-sort="status">Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        `;
+                        const tbody = table.querySelector('tbody');
+
+                        function renderTableRows(appointments) {
+                            tbody.innerHTML = '';
+                            appointments.forEach(appointment => {
+                                const row = document.createElement('tr');
+                                row.setAttribute('data-date', appointment.date);
+                                row.setAttribute('data-id', appointment.id);
+                                row.innerHTML = `
+                                    <td class="whitespace-nowrap">${appointment.name || ''}</td>
+                                    <td>${appointment.sex || ''}</td>
+                                    <td>${appointment.category || ''}</td>
+                                    <td>${appointment.purpose || ''}</td>
+                                    <td>${appointment.status || ''}</td>
+                                    <td>
+                                        <button class="confirm-btn text-green-500 hover:underline">Confirm</button>
+                                        <button class="edit-btn text-blue-500 hover:underline">Edit</button>
+                                        <button class="delete-btn text-red-500 hover:underline ml-2">Delete</button>
+                                    </td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+
+                            document.querySelectorAll('.confirm-btn').forEach(button => {
+                                button.addEventListener('click', (e) => {
+                                    const row = e.target.closest('tr');
+                                    const date = row.getAttribute('data-date');
+                                    const id = row.getAttribute('data-id');
+                                    const statusCell = row.querySelector('td:nth-child(5)');
+                                    confirmAppointment(databaseKey, date, id, statusCell, e.target);
+                                });
+                            });
+
+                            document.querySelectorAll('.edit-btn').forEach(button => {
+                                button.addEventListener('click', (e) => {
+                                    const row = e.target.closest('tr');
+                                    const date = row.getAttribute('data-date');
+                                    const id = row.getAttribute('data-id');
+                                    const appointment = allAppointments.find(app => app.date === date && app.id === id);
+                                    
+                                    if (appointment) {
+                                        openEditModal(clinicName, date, id, appointment);
+                                    }
+                                });
+                            });
+
+                            document.querySelectorAll('.delete-btn').forEach(button => {
+                                button.addEventListener('click', (e) => {
+                                    const row = e.target.closest('tr');
+                                    const date = row.getAttribute('data-date');
+                                    const id = row.getAttribute('data-id');
+                                    deleteAppointment(databaseKey, date, id);
+                                });
+                            });
+                        }
+
+                        renderTableRows(allAppointments);
+
+                        let sortDirection = {};
+                        table.querySelectorAll('th[data-sort]').forEach(header => {
+                            header.addEventListener('click', () => {
+                                const key = header.getAttribute('data-sort');
+                                sortDirection[key] = sortDirection[key] === 'asc' ? 'desc' : 'asc';
+
+                                const sortedAppointments = allAppointments.sort((a, b) => {
+                                    const valA = a[key] ? String(a[key]).toLowerCase() : '';
+                                    const valB = b[key] ? String(b[key]).toLowerCase() : '';
+
+                                    if (valA < valB) return sortDirection[key] === 'asc' ? -1 : 1;
+                                    if (valA > valB) return sortDirection[key] === 'asc' ? 1 : -1;
+                                    return 0;
+                                });
+                                renderTableRows(sortedAppointments);
+                            });
+                        });
+                        
+                        modalContent.appendChild(table);
+
+                        tableSearchInput.addEventListener('keyup', (e) => {
+                            const query = e.target.value.toLowerCase();
+                            const rows = tbody.querySelectorAll('tr');
+                            rows.forEach(row => {
+                                const nameCell = row.querySelector('td:first-child').textContent.toLowerCase();
+                                if (nameCell.includes(query)) {
+                                    row.style.display = '';
+                                } else {
+                                    row.style.display = 'none';
+                                }
+                            });
+                        });
+
                     } else {
-                        modalContent.innerHTML = `<p class="text-center text-gray-500">No appointments found for ${centerName}.</p>`;
+                        modalContent.innerHTML = `<p class="text-center text-gray-500">No appointments found for ${clinicName}.</p>`;
+                        tableSearchInput.style.display = 'none';
                     }
                 }, (error) => {
                     console.error("Firebase fetch failed:", error);
                     modalContent.innerHTML = `<p class="text-center text-red-500">Failed to load data. Please try again.</p>`;
                 });
+            }
+
+            function openEditModal(clinicName, date, id, appointmentData) {
+                const editModalContent = `
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold">Edit Appointment</h4>
+                        <div>
+                            <label class="block">Name</label>
+                            <input type="text" id="edit-name" value="${appointmentData.name || ''}" class="w-full border rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block">Sex</label>
+                            <input type="text" id="edit-sex" value="${appointmentData.sex || ''}" class="w-full border rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block">Category</label>
+                            <input type="text" id="edit-category" value="${appointmentData.category || ''}" class="w-full border rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block">Purpose</label>
+                            <input type="text" id="edit-purpose" value="${appointmentData.purpose || ''}" class="w-full border rounded p-2">
+                        </div>
+                        <div>
+                            <label class="block">Status</label>
+                            <input type="text" id="edit-status" value="${appointmentData.status || ''}" class="w-full border rounded p-2">
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button id="save-edit-btn" class="bg-blue-500 text-white px-4 py-2 rounded-full">Save</button>
+                            <button id="cancel-edit-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                modalContent.innerHTML = editModalContent;
+
+                document.getElementById('save-edit-btn').addEventListener('click', () => {
+                    const newData = {
+                        name: document.getElementById('edit-name').value,
+                        sex: document.getElementById('edit-sex').value,
+                        category: document.getElementById('edit-category').value,
+                        purpose: document.getElementById('edit-purpose').value,
+                        status: document.getElementById('edit-status').value
+                    };
+                    const databaseKey = clinicMap[clinicName];
+                    saveAppointment(databaseKey, date, id, newData);
+                    
+                    showModal(clinicName);
+                });
+
+                document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+                    showModal(clinicName);
+                });
+            }
+            
+            function confirmAppointment(databaseKey, date, id, statusCell, button) {
+                const appointmentRef = database.ref(`appointments/${databaseKey}/${date}/${id}`);
+                appointmentRef.update({
+                    status: "Confirmed"
+                })
+                .then(() => {
+                    alert("Appointment confirmed successfully!");
+                    statusCell.textContent = "Confirmed";
+                    button.textContent = "Confirmed";
+                    button.disabled = true;
+                    button.classList.remove('text-green-500', 'hover:underline');
+                    button.classList.add('text-gray-500', 'cursor-not-allowed');
+                })
+                .catch((error) => {
+                    console.error("Error confirming appointment:", error);
+                    alert("Failed to confirm appointment.");
+                });
+            }
+
+            function saveAppointment(databaseKey, date, id, newData) {
+                const appointmentRef = database.ref(`appointments/${databaseKey}/${date}/${id}`);
+                appointmentRef.update(newData)
+                    .then(() => {
+                        alert("Appointment updated successfully!");
+                    })
+                    .catch((error) => {
+                        console.error("Error updating appointment:", error);
+                        alert("Failed to update appointment.");
+                    });
+            }
+
+            function deleteAppointment(databaseKey, date, id) {
+                if (confirm("Are you sure you want to delete this appointment?")) {
+                    const appointmentRef = database.ref(`appointments/${databaseKey}/${date}/${id}`);
+                    appointmentRef.remove()
+                        .then(() => {
+                            alert("Appointment deleted successfully!");
+                        })
+                        .catch((error) => {
+                            console.error("Error deleting appointment:", error);
+                            alert("Failed to delete appointment.");
+                        });
+                }
             }
 
             function hideModal() {

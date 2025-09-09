@@ -89,15 +89,31 @@
     </div>
 
     <script>
-        // Firebase configuration
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app/"
+            apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
+            authDomain: "cho-clinic.firebaseapp.com",
+            databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cho-clinic",
+            storageBucket: "cho-clinic.firebasestorage.app",
+            messagingSenderId: "1078609107976",
+            appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
+            measurementId: "G-FHE4TNMD0X"
         };
+
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const database = app.database();
 
         document.addEventListener('DOMContentLoaded', () => {
+            const healthCentersGrid = document.getElementById('healthCentersGrid');
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearButton');
+            const dataModal = document.getElementById('dataModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            const closeModalButton = document.getElementById('closeModal');
+
             const healthCenters = [
                 'TUNASAN HEALTH CENTER',
                 'VICTORIA HEALTH CENTER',
@@ -117,111 +133,118 @@
                 'BAGONG SILANG HEALTH CENTER',
             ];
 
-            const gridContainer = document.getElementById('healthCentersGrid');
-            const searchInput = document.getElementById('searchInput');
-            const clearButton = document.getElementById('clearButton');
-            const modal = document.getElementById('dataModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalContent = document.getElementById('modalContent');
-            const closeModalBtn = document.getElementById('closeModal');
+            function createHealthCenterCard(centerName) {
+                const card = document.createElement('div');
+                card.classList.add('bg-white', 'rounded-lg', 'shadow-md', 'p-6', 'flex', 'flex-col', 'items-center', 'text-center', 'transition', 'transform', 'hover:scale-105', 'hover:shadow-xl', 'cursor-pointer');
+                
+                const name = document.createElement('h3');
+                name.textContent = centerName;
+                name.classList.add('text-lg', 'font-semibold', 'text-dark-blue', 'mb-2');
+                card.appendChild(name);
 
-            // Function to generate a URL slug from the health center name
-            const createSlug = (name) => {
-                return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); // Adjusted slug creation
-            };
-
-            // Function to render health center links
-            const renderHealthCenters = (centers) => {
-                gridContainer.innerHTML = ''; // Clear existing content
-                centers.forEach(center => {
-                    const linkHtml = `
-                        <a href="#" data-center="${center}" class="button-bg rounded-lg shadow-md p-4 text-center font-semibold text-dark-blue hover:shadow-lg transition transform hover:scale-105">
-                            ${center}
-                        </a>
-                    `;
-                    gridContainer.innerHTML += linkHtml;
+                const viewButton = document.createElement('button');
+                viewButton.textContent = 'View Appointments';
+                viewButton.classList.add('mt-2', 'px-4', 'py-2', 'rounded-full', 'font-semibold', 'button-bg', 'text-dark-blue', 'hover:bg-yellow-400', 'transition');
+                viewButton.addEventListener('click', () => {
+                    showModal(centerName);
                 });
-            };
+                card.appendChild(viewButton);
+                
+                return card;
+            }
 
-            // Initial render of all health centers
-            renderHealthCenters(healthCenters);
-
-            // Add event listener to the search input
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
+            function renderHealthCenters(filter = '') {
+                healthCentersGrid.innerHTML = '';
                 const filteredCenters = healthCenters.filter(center => 
-                    center.toLowerCase().includes(searchTerm)
+                    center.toLowerCase().includes(filter.toLowerCase())
                 );
-                renderHealthCenters(filteredCenters);
-            });
+                
+                filteredCenters.forEach(center => {
+                    const card = createHealthCenterCard(center);
+                    healthCentersGrid.appendChild(card);
+                });
+            }
 
-            // Add event listener to the clear button
-            clearButton.addEventListener('click', () => {
-                searchInput.value = ''; // Clear the input field
-                renderHealthCenters(healthCenters); // Show all health centers
-            });
+            function showModal(centerName) {
+                modalTitle.textContent = `Appointments for ${centerName}`;
+                modalContent.innerHTML = `<p class="text-center text-gray-500">Loading appointments...</p>`;
+                dataModal.style.display = 'flex';
 
-            // Handle link clicks to show data
-            gridContainer.addEventListener('click', (e) => {
-                // Check if the clicked element is a health center link
-                const targetLink = e.target.closest('a[data-center]');
-                if (targetLink) {
-                    e.preventDefault(); // Prevent default link behavior
-                    const centerName = targetLink.getAttribute('data-center');
-                    showDataForCenter(centerName);
-                }
-            });
+                const databasePath = `appointments/${centerName}`;
+                const centerRef = database.ref(databasePath);
 
-            // Function to show modal with data
-            const showDataForCenter = (centerName) => {
-                modalTitle.textContent = centerName;
-                modalContent.innerHTML = '<p class="text-center text-gray-500">Loading data...</p>';
-                modal.style.display = 'flex';
+                centerRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    modalContent.innerHTML = ''; // Clear previous content
 
-                const slug = createSlug(centerName);
-                const dbRef = database.ref('appointments/' + slug);
+                    if (data) {
+                        const appointmentsList = document.createElement('div');
+                        appointmentsList.classList.add('space-y-4');
 
-                dbRef.once('value')
-                    .then(snapshot => {
-                        const appointments = snapshot.val();
-                        if (appointments) {
-                            let contentHtml = '<h4 class="font-bold text-lg mb-2">Appointments</h4>';
-                            contentHtml += '<ul class="list-disc list-inside space-y-2">';
-                            // Loop through appointments and display them
-                            for (const key in appointments) {
-                                const appointment = appointments[key];
-                                contentHtml += `
-                                    <li class="p-2 border-b border-gray-200 last:border-b-0">
-                                        <p><span class="font-medium">Name:</span> ${appointment.name}</p>
-                                        <p><span class="font-medium">Service:</span> ${appointment.service}</p>
-                                        <p><span class="font-medium">Date:</span> ${appointment.date}</p>
-                                        <p><span class="font-medium">Status:</span> ${appointment.status}</p>
-                                    </li>
-                                `;
+                        for (const date in data) {
+                            if (data.hasOwnProperty(date)) {
+                                const dailyAppointments = data[date];
+                                
+                                const dateSection = document.createElement('div');
+                                dateSection.classList.add('border', 'border-gray-200', 'rounded-md', 'p-4');
+
+                                const dateHeading = document.createElement('h4');
+                                dateHeading.classList.add('font-bold', 'text-lg', 'text-dark-blue', 'mb-2');
+                                dateHeading.textContent = `Date: ${date}`;
+                                dateSection.appendChild(dateHeading);
+
+                                const dailyList = document.createElement('ul');
+                                dailyList.classList.add('list-disc', 'pl-5');
+
+                                for (const appointmentId in dailyAppointments) {
+                                    if (dailyAppointments.hasOwnProperty(appointmentId)) {
+                                        const appointment = dailyAppointments[appointmentId];
+                                        const listItem = document.createElement('li');
+                                        listItem.classList.add('text-gray-700');
+                                        listItem.innerHTML = `
+                                            <strong>Name:</strong> ${appointment.name}<br>
+                                            <strong>Time:</strong> ${appointment.time}<br>
+                                            <strong>Purpose:</strong> ${appointment.purpose}
+                                        `;
+                                        dailyList.appendChild(listItem);
+                                    }
+                                }
+                                dateSection.appendChild(dailyList);
+                                appointmentsList.appendChild(dateSection);
                             }
-                            contentHtml += '</ul>';
-                            modalContent.innerHTML = contentHtml;
-                        } else {
-                            modalContent.innerHTML = '<p class="text-center text-gray-500">No appointments found for this health center.</p>';
                         }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching data:", error);
-                        modalContent.innerHTML = '<p class="text-center text-red-500">Error fetching data. Please check your network connection and database rules.</p>';
-                    });
-            };
+                        modalContent.appendChild(appointmentsList);
+                    } else {
+                        modalContent.innerHTML = `<p class="text-center text-gray-500">No appointments found for ${centerName}.</p>`;
+                    }
+                }, (error) => {
+                    console.error("Firebase fetch failed:", error);
+                    modalContent.innerHTML = `<p class="text-center text-red-500">Failed to load data. Please try again.</p>`;
+                });
+            }
 
-            // Close the modal when the close button is clicked
-            closeModalBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
+            function hideModal() {
+                dataModal.style.display = 'none';
+            }
+
+            searchInput.addEventListener('keyup', (e) => {
+                renderHealthCenters(e.target.value);
             });
 
-            // Close the modal when clicking outside of it
+            clearButton.addEventListener('click', () => {
+                searchInput.value = '';
+                renderHealthCenters();
+            });
+
+            closeModalButton.addEventListener('click', hideModal);
+
             window.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
+                if (e.target === dataModal) {
+                    hideModal();
                 }
             });
+
+            renderHealthCenters();
         });
     </script>
 </body>

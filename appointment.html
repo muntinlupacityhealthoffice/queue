@@ -389,11 +389,12 @@
                 scheduleData.forEach((value, key) => allData[key] = value);
                 
                 try {
-                    const appointmentsRef = ref(database, 'appointments');
-                    const newAppointmentRef = push(appointmentsRef);
+                    const selectedHealthCenter = allData.healthCenter;
+                    const healthCenterRef = ref(database, `appointments/${selectedHealthCenter}`);
+                    const newAppointmentRef = push(healthCenterRef);
                     await set(newAppointmentRef, allData);
                     
-                    console.log('Final Appointment Confirmed and Saved to Database!');
+                    console.log(`Final Appointment Confirmed and Saved to ${selectedHealthCenter} Database!`);
                     confirmationModal.classList.add('hidden');
                     successMessage.classList.remove('hidden');
                 } catch (error) {

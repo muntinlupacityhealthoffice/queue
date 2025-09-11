@@ -122,6 +122,7 @@
                                 <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
                                 <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
+                                    <option value="city_health_office">CITY HEALTH OFFICE</option>
                                     <option value="tunasan">TUNASAN HEALTH CENTER</option>
                                     <option value="victoria">VICTORIA HEALTH CENTER</option>
                                     <option value="laguerta">LAGUERTA HEALTH CENTER</option>
@@ -165,10 +166,11 @@
                             <select id="preferredTime" name="preferredTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="">--SELECT--</option>
                             </select>
+                            <span id="availabilityMessage" class="text-sm mt-1"></span>
                         </div>
                         <div class="flex justify-between">
                             <button type="button" id="backButton" class="w-full sm:w-auto px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors duration-200">Back</button>
-                            <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-[#ffc107] text-gray-900 font-semibold rounded-full shadow-md hover:bg-[#ffa000] focus:outline-none focus:ring-2 focus:ring-[#ffc107] focus:ring-offset-2 transition-colors duration-200">Submit</button>
+                            <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-2 bg-[#ffc107] text-gray-900 font-semibold rounded-full shadow-md hover:bg-[#ffa000] focus:outline-none focus:ring-2 focus:ring-[#ffc107] focus:ring-offset-2 transition-colors duration-200">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -209,8 +211,10 @@
                 <div class="relative p-8 bg-white w-full max-w-lg mx-auto rounded-2xl shadow-xl border-2 border-green-400">
                     <div class="text-center">
                         <svg class="mx-auto h-16 w-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h3 class="text-2xl font-bold text-green-700 mt-4">Appointment Confirmed!</h3>
-                        <p class="text-gray-600 mt-2">Thank you for booking your appointment. You will receive a confirmation email shortly.</p>
+                        <h3 class="text-2xl font-bold text-green-700 mt-4">Appointment Pending</h3>
+                        <p class="text-gray-600 mt-2">Your appointment has been successfully submitted. You are currently in line at:</p>
+                        <p class="mt-4 text-3xl font-bold text-blue-800" id="queueNumberDisplay"></p>
+                        <p class="mt-2 text-sm text-gray-600">A representative will confirm your appointment via email or phone call as soon as possible.</p>
                         <div class="mt-6">
                             <button onclick="window.location.reload();" class="w-full px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200">
                                 Close
@@ -233,7 +237,7 @@
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -252,6 +256,27 @@
         const analytics = getAnalytics(app);
         const database = getDatabase(app);
 
+        // All health centers and their display names
+        const healthCenters = {
+            "city_health_office": "CITY HEALTH OFFICE",
+            "tunasan": "TUNASAN HEALTH CENTER",
+            "victoria": "VICTORIA HEALTH CENTER",
+            "laguerta": "LAGUERTA HEALTH CENTER",
+            "poblacion": "POBLACION HEALTH CENTER",
+            "southville": "SOUTHVILLE HEALTH CENTER",
+            "putatan": "PUTATAN HEALTH CENTER",
+            "putatan_annex": "PUTATAN ANNEX HEALTH CENTER",
+            "lakeview": "LAKEVIEW HEALTH CENTER",
+            "bayan_main": "BAYANAN MAIN HEALTH CENTER",
+            "alabang": "ALABANG HEALTH CENTER",
+            "ayala_alabang": "AYALA ALABANG HEALTH CENTER",
+            "cupang": "CUPANG HEALTH CENTER",
+            "sitio_sto_nino": "SITIO STO. NINO HEALTH CENTER",
+            "buli": "BULI HEALTH CENTER",
+            "sucat": "SUCAT HEALTH CENTER",
+            "bagong_silang": "BAGONG SILANG HEALTH CENTER"
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const step1 = document.getElementById('step1');
             const step2 = document.getElementById('step2');
@@ -267,8 +292,10 @@
             const confirmButton = document.getElementById('confirmButton');
             const successMessage = document.getElementById('successMessage');
             const formContainer = document.getElementById('formContainer');
+            const availabilityMessage = document.getElementById('availabilityMessage');
+            const submitButton = document.getElementById('submitButton');
 
-            // New elements for privacy modal
+            // Privacy modal elements
             const privacyModal = document.getElementById('privacyModal');
             const acknowledgePrivacyButton = document.getElementById('acknowledgePrivacy');
 
@@ -287,6 +314,7 @@
 
             // Function to generate time slots
             const generateTimeSlots = () => {
+                preferredTimeSelect.innerHTML = '<option value="">--SELECT--</option>';
                 const startTime = 8 * 60; // 8:00 AM in minutes
                 const endTime = 17 * 60; // 5:00 PM in minutes
                 const slotDuration = 30; // 30 minutes
@@ -309,11 +337,46 @@
                 }
             };
 
+            // Function to check for time slot availability
+            const checkAvailability = () => {
+                const healthCenter = document.getElementById('healthCenter').value;
+                const date = preferredDateInput.value;
+                const time = preferredTimeSelect.value;
+
+                if (!healthCenter || !date || !time) {
+                    availabilityMessage.textContent = '';
+                    submitButton.disabled = true;
+                    return;
+                }
+                
+                const healthCenterRef = ref(database, `appointments/${healthCenter}`);
+                onValue(healthCenterRef, (snapshot) => {
+                    const data = snapshot.val();
+                    let isBooked = false;
+                    if (data) {
+                        for (const key in data) {
+                            if (data[key].preferredDate === date && data[key].preferredTime === time) {
+                                isBooked = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isBooked) {
+                        availabilityMessage.textContent = 'This time slot is already booked. Please choose another one.';
+                        availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
+                        submitButton.disabled = true;
+                    } else {
+                        availabilityMessage.textContent = 'This time slot is available.';
+                        availabilityMessage.className = 'text-sm mt-1 text-green-600 font-semibold';
+                        submitButton.disabled = false;
+                    }
+                }, { onlyOnce: true });
+            };
+
             // Initial setup
             setMinDate();
             generateTimeSlots();
-
-            // Display privacy modal on page load
             privacyModal.classList.remove('hidden');
 
             // Handle privacy acknowledgment
@@ -321,12 +384,18 @@
                 privacyModal.classList.add('hidden');
             });
 
+            // Listen for changes on the time and date inputs
+            preferredDateInput.addEventListener('change', checkAvailability);
+            preferredTimeSelect.addEventListener('change', checkAvailability);
+            document.getElementById('healthCenter').addEventListener('change', checkAvailability);
+
             // Handle "Next" button click
             nextButton.addEventListener('click', (event) => {
                 if (personalInfoForm.checkValidity()) {
                     event.preventDefault();
                     step1.classList.add('hidden');
                     step2.classList.remove('hidden');
+                    checkAvailability(); // Initial check when moving to step 2
                 } else {
                     personalInfoForm.reportValidity();
                 }
@@ -358,7 +427,7 @@
                         <p><strong class="font-semibold">Email:</strong> ${allData.email}</p>
                         <p><strong class="font-semibold">Phone:</strong> ${allData.phone}</p>
                         <p><strong class="font-semibold">Service:</strong> ${allData.services}</p>
-                        <p><strong class="font-semibold">Health Center:</strong> ${allData.healthCenter}</p>
+                        <p><strong class="font-semibold">Health Center:</strong> ${healthCenters[allData.healthCenter]}</p>
                         <p><strong class="font-semibold">Specific Details:</strong> ${allData.specificDetails}</p>
                         <p><strong class="font-semibold">Date:</strong> ${allData.preferredDate}</p>
                         <p><strong class="font-semibold">Time:</strong> ${allData.preferredTime}</p>
@@ -391,9 +460,36 @@
                 try {
                     const selectedHealthCenter = allData.healthCenter;
                     const healthCenterRef = ref(database, `appointments/${selectedHealthCenter}`);
-                    const newAppointmentRef = push(healthCenterRef);
-                    await set(newAppointmentRef, allData);
                     
+                    const newAppointmentRef = push(healthCenterRef);
+                    const queueNumber = newAppointmentRef.key;
+                    
+                    // Count how many appointments are already in the queue
+                    let currentQueueCount = 0;
+                    onValue(healthCenterRef, (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            // Filter appointments that are not 'Cancelled' to get a more accurate queue count
+                            const activeAppointments = Object.values(data).filter(appt => appt.status !== 'Cancelled');
+                            currentQueueCount = activeAppointments.length + 1;
+                        } else {
+                            currentQueueCount = 1;
+                        }
+                    }, { onlyOnce: true });
+
+                    // Add the requested fields and a timestamp
+                    const appointmentData = {
+                        ...allData,
+                        queueNumber: queueNumber,
+                        readableId: `appt-${Math.floor(Math.random() * 10000)}`,
+                        status: "pending", // Set status to pending
+                        timestamp: new Date().toISOString()
+                    };
+
+                    await set(newAppointmentRef, appointmentData);
+                    
+                    document.getElementById('queueNumberDisplay').textContent = currentQueueCount;
+
                     console.log(`Final Appointment Confirmed and Saved to ${selectedHealthCenter} Database!`);
                     confirmationModal.classList.add('hidden');
                     successMessage.classList.remove('hidden');

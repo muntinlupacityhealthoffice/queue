@@ -48,8 +48,13 @@
     </div>
 
     <header class="header border-b-4 border-blue-400">
-        <div class="container flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 py-4"> <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-center sm:text-left"> <img src="https://i.ibb.co/L150B20/Screenshot-2025-09-08-224815.png" alt="City Health Logo" class="rounded-full w-28 h-28 shadow-lg"> <div>
-                    <h1 class="font-semibold text-xl text-gray-700">MUNTINLUPA</h1> <h2 class="font-bold text-4xl">CITY HEALTH OFFICE</h2> </div>
+        <div class="container flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 py-4">
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
+                <img src="https://i.ibb.co/L150B20/Screenshot-2025-09-08-224815.png" alt="City Health Logo" class="rounded-full w-28 h-28 shadow-lg">
+                <div>
+                    <h1 class="font-semibold text-xl text-gray-700">MUNTINLUPA</h1>
+                    <h2 class="font-bold text-4xl">CITY HEALTH OFFICE</h2>
+                </div>
             </div>
             <nav class="mt-4 sm:mt-0">
                 <ul class="flex space-x-6 font-medium">
@@ -170,7 +175,7 @@
                         </div>
                         <div class="flex justify-between">
                             <button type="button" id="backButton" class="w-full sm:w-auto px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors duration-200">Back</button>
-                            <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-2 bg-[#ffc107] text-gray-900 font-semibold rounded-full shadow-md hover:bg-[#ffa000] focus:outline-none focus:ring-2 focus:ring-[#ffc107] focus:ring-offset-2 transition-colors duration-200">Submit</button>
+                            <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-600 font-semibold rounded-full shadow-md transition-colors duration-200" disabled>Submit</button>
                         </div>
                     </form>
                 </div>
@@ -337,15 +342,19 @@
                 }
             };
 
-            // Function to check for time slot availability
+            // Function to check for time slot availability and update button state
             const checkAvailability = () => {
                 const healthCenter = document.getElementById('healthCenter').value;
                 const date = preferredDateInput.value;
                 const time = preferredTimeSelect.value;
+                
+                // Reset availability message and button state
+                availabilityMessage.textContent = '';
+                submitButton.disabled = true;
+                submitButton.classList.remove('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
+                submitButton.classList.add('bg-gray-400', 'text-gray-600');
 
                 if (!healthCenter || !date || !time) {
-                    availabilityMessage.textContent = '';
-                    submitButton.disabled = true;
                     return;
                 }
                 
@@ -365,11 +374,12 @@
                     if (isBooked) {
                         availabilityMessage.textContent = 'This time slot is already booked. Please choose another one.';
                         availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
-                        submitButton.disabled = true;
                     } else {
                         availabilityMessage.textContent = 'This time slot is available.';
                         availabilityMessage.className = 'text-sm mt-1 text-green-600 font-semibold';
                         submitButton.disabled = false;
+                        submitButton.classList.remove('bg-gray-400', 'text-gray-600');
+                        submitButton.classList.add('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
                     }
                 }, { onlyOnce: true });
             };

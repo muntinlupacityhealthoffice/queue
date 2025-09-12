@@ -340,6 +340,17 @@
                 }
             };
             
+            // Function to populate the health center dropdown with all available centers
+            const populateAllHealthCenters = () => {
+                healthCenterSelect.innerHTML = '<option value="">--SELECT--</option>';
+                for (const key in healthCenterData) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = healthCenterData[key].name;
+                    healthCenterSelect.appendChild(option);
+                }
+            };
+
             // Function to filter health centers based on selected service
             const filterHealthCentersByService = () => {
                 const selectedService = servicesSelect.value;
@@ -354,6 +365,9 @@
                             healthCenterSelect.appendChild(option);
                         }
                     }
+                } else {
+                    // If no service is selected, show all health centers
+                    populateAllHealthCenters();
                 }
             };
 
@@ -409,6 +423,7 @@
             // Initial setup
             setMinDate();
             generateTimeSlots();
+            populateAllHealthCenters();
             privacyModal.classList.remove('hidden');
 
             // Handle privacy acknowledgment

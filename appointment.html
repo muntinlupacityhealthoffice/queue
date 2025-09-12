@@ -72,103 +72,100 @@
             <h2 class="text-3xl font-bold text-center mb-8">Set Appointment</h2>
             
             <div id="formContainer" class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-400">
-                <div id="step1">
-                    <h3 class="text-xl font-semibold mb-4 text-center">Step 1: Personal Information</h3>
-                    <form id="personalInfoForm">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name*</label>
-                                <input type="text" id="lastName" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="firstName" class="block text-sm font-medium text-gray-700">First Name*</label>
-                                <input type="text" id="firstName" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="middleName" class="block text-sm font-medium text-gray-700">Middle Name</label>
-                                <input type="text" id="middleName" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
+                <form id="appointmentForm">
+                    <h3 class="text-xl font-semibold mb-4 text-center">Personal & Appointment Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name*</label>
+                            <input type="text" id="lastName" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700">First Name*</label>
+                            <input type="text" id="firstName" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="middleName" class="block text-sm font-medium text-gray-700">Middle Name</label>
+                            <input type="text" id="middleName" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                    </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label for="age" class="block text-sm font-medium text-gray-700">Age*</label>
-                                <input type="number" id="age" name="age" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="sex" class="block text-sm font-medium text-gray-700">Sex*</label>
-                                <select id="sex" name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
-                                <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="age" class="block text-sm font-medium text-gray-700">Age*</label>
+                            <input type="number" id="age" name="age" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number*</label>
-                                <input type="tel" id="phone" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
-                                <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
-                                    <option value="death_transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
-                                    <option value="water_laboratory">Water Laboratory</option>
-                                    <option value="checkup">General Consultation and Treatment</option>
-                                    <option value="medical_certificate">Issuance of medical Certificate</option>
-                                    <option value="sanitary_permit">Issuance of Sanitary Permit</option>
-                                    <option value="basic_laboratory">Basic Laboratory</option>
-                                    <option value="basic_xray">Basic x-ray</option>
-                                    <option value="vaccination">Vaccination</option>
-                                    <option value="dental">Dental</option>
-                                    <option value="others">Others</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
-                                <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label for="sex" class="block text-sm font-medium text-gray-700">Sex*</label>
+                            <select id="sex" name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <option value="">--SELECT--</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
                         </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
+                            <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number*</label>
+                            <input type="tel" id="phone" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
+                            <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <option value="">--SELECT--</option>
+                                <option value="death_transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
+                                <option value="water_laboratory">Water Laboratory</option>
+                                <option value="checkup">General Consultation and Treatment</option>
+                                <option value="medical_certificate">Issuance of medical Certificate</option>
+                                <option value="sanitary_permit">Issuance of Sanitary Permit</option>
+                                <option value="basic_laboratory">Basic Laboratory</option>
+                                <option value="basic_xray">Basic x-ray</option>
+                                <option value="vaccination">Vaccination</option>
+                                <option value="dental">Dental</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
+                            <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <option value="">--SELECT--</option>
+                            </select>
+                        </div>
+                    </div>
 
-                        <div class="mb-6">
-                            <label for="specificDetails" class="block text-sm font-medium text-gray-700">Specific Details*</label>
-                            <textarea id="specificDetails" name="specificDetails" rows="4" required placeholder="e.g., Please describe your symptoms or the reason for your appointment in detail." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
-                        </div>
-                        
-                        <div class="text-center">
-                            <button type="button" id="nextButton" class="w-full sm:w-auto px-6 py-2 bg-[#ffc107] text-gray-900 font-semibold rounded-full shadow-md hover:bg-[#ffa000] focus:outline-none focus:ring-2 focus:ring-[#ffc107] focus:ring-offset-2 transition-colors duration-200">Next</button>
-                        </div>
-                    </form>
-                </div>
-                
-                <div id="step2" class="hidden">
-                    <h3 class="text-xl font-semibold mb-4 text-center">Step 2: Schedule Appointment</h3>
-                    <form id="scheduleForm">
-                        <div class="mb-4">
+                    <div class="mb-6">
+                        <label for="specificDetails" class="block text-sm font-medium text-gray-700">Specific Details*</label>
+                        <textarea id="specificDetails" name="specificDetails" rows="4" required placeholder="e.g., Please describe your symptoms or the reason for your appointment in detail." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
                             <label for="preferredDate" class="block text-sm font-medium text-gray-700">Preferred Date*</label>
                             <input type="date" id="preferredDate" name="preferredDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </div>
-                        <div class="mb-6">
+                        <div>
                             <label for="preferredTime" class="block text-sm font-medium text-gray-700">Preferred Time*</label>
                             <select id="preferredTime" name="preferredTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 <option value="">--SELECT--</option>
                             </select>
-                            <span id="availabilityMessage" class="text-sm mt-1"></span>
                         </div>
-                        <div class="flex justify-between">
-                            <button type="button" id="backButton" class="w-full sm:w-auto px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors duration-200">Back</button>
-                            <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-600 font-semibold rounded-full shadow-md transition-colors duration-200" disabled>Submit</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <span id="availabilityMessage" class="block text-sm mt-1 mb-4"></span>
+                    
+                    <div class="text-center">
+                        <button type="submit" id="submitButton" class="flex items-center justify-center w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-600 font-semibold rounded-full shadow-md transition-colors duration-200" disabled>
+                            <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Submit
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
@@ -265,4 +262,11 @@
             "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
             "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
             "ayala_alabang": { name: "AYALA ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "
+            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "sitio_sto_nino": { name: "SITIO STO. NINO HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "buli": { name: "BULI HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "sucat": { name: "SUCAT HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] }
+        };
+
+        document.addEventListener('

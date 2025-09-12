@@ -118,32 +118,22 @@
                                 <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
                                 <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
-                                    <option value="checkup">General Consultation</option>
-                                    <option value="dental">Dental</option>
+                                    <option value="death_transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
+                                    <option value="water_laboratory">Water Laboratory</option>
+                                    <option value="checkup">General Consultation and Treatment</option>
+                                    <option value="medical_certificate">Issuance of medical Certificate</option>
+                                    <option value="sanitary_permit">Issuance of Sanitary Permit</option>
+                                    <option value="basic_laboratory">Basic Laboratory</option>
+                                    <option value="basic_xray">Basic x-ray</option>
                                     <option value="vaccination">Vaccination</option>
+                                    <option value="dental">Dental</option>
+                                    <option value="others">Others</option>
                                 </select>
                             </div>
                             <div>
                                 <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
                                 <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
-                                    <option value="city_health_office">CITY HEALTH OFFICE</option>
-                                    <option value="tunasan">TUNASAN HEALTH CENTER</option>
-                                    <option value="victoria">VICTORIA HEALTH CENTER</option>
-                                    <option value="laguerta">LAGUERTA HEALTH CENTER</option>
-                                    <option value="poblacion">POBLACION HEALTH CENTER</option>
-                                    <option value="southville">SOUTHVILLE HEALTH CENTER</option>
-                                    <option value="putatan">PUTATAN HEALTH CENTER</option>
-                                    <option value="putatan_annex">PUTATAN ANNEX HEALTH CENTER</option>
-                                    <option value="lakeview">LAKEVIEW HEALTH CENTER</option>
-                                    <option value="bayan_main">BAYANAN MAIN HEALTH CENTER</option>
-                                    <option value="alabang">ALABANG HEALTH CENTER</option>
-                                    <option value="ayala_alabang">AYALA ALABANG HEALTH CENTER</option>
-                                    <option value="cupang">CUPANG HEALTH CENTER</option>
-                                    <option value="sitio_sto_nino">SITIO STO. NINO HEALTH CENTER</option>
-                                    <option value="buli">BULI HEALTH CENTER</option>
-                                    <option value="sucat">SUCAT HEALTH CENTER</option>
-                                    <option value="bagong_silang">BAGONG SILANG HEALTH CENTER</option>
                                 </select>
                             </div>
                         </div>
@@ -261,254 +251,18 @@
         const analytics = getAnalytics(app);
         const database = getDatabase(app);
 
-        // All health centers and their display names
-        const healthCenters = {
-            "city_health_office": "CITY HEALTH OFFICE",
-            "tunasan": "TUNASAN HEALTH CENTER",
-            "victoria": "VICTORIA HEALTH CENTER",
-            "laguerta": "LAGUERTA HEALTH CENTER",
-            "poblacion": "POBLACION HEALTH CENTER",
-            "southville": "SOUTHVILLE HEALTH CENTER",
-            "putatan": "PUTATAN HEALTH CENTER",
-            "putatan_annex": "PUTATAN ANNEX HEALTH CENTER",
-            "lakeview": "LAKEVIEW HEALTH CENTER",
-            "bayan_main": "BAYANAN MAIN HEALTH CENTER",
-            "alabang": "ALABANG HEALTH CENTER",
-            "ayala_alabang": "AYALA ALABANG HEALTH CENTER",
-            "cupang": "CUPANG HEALTH CENTER",
-            "sitio_sto_nino": "SITIO STO. NINO HEALTH CENTER",
-            "buli": "BULI HEALTH CENTER",
-            "sucat": "SUCAT HEALTH CENTER",
-            "bagong_silang": "BAGONG SILANG HEALTH CENTER"
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const step1 = document.getElementById('step1');
-            const step2 = document.getElementById('step2');
-            const nextButton = document.getElementById('nextButton');
-            const backButton = document.getElementById('backButton');
-            const personalInfoForm = document.getElementById('personalInfoForm');
-            const scheduleForm = document.getElementById('scheduleForm');
-            const preferredDateInput = document.getElementById('preferredDate');
-            const preferredTimeSelect = document.getElementById('preferredTime');
-            const confirmationModal = document.getElementById('confirmationModal');
-            const confirmationDetails = document.getElementById('confirmationDetails');
-            const editButton = document.getElementById('editButton');
-            const confirmButton = document.getElementById('confirmButton');
-            const successMessage = document.getElementById('successMessage');
-            const formContainer = document.getElementById('formContainer');
-            const availabilityMessage = document.getElementById('availabilityMessage');
-            const submitButton = document.getElementById('submitButton');
-
-            // Privacy modal elements
-            const privacyModal = document.getElementById('privacyModal');
-            const acknowledgePrivacyButton = document.getElementById('acknowledgePrivacy');
-
-            // Function to set the minimum date to tomorrow
-            const setMinDate = () => {
-                const today = new Date();
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                const year = tomorrow.getFullYear();
-                const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-                const day = String(tomorrow.getDate()).padStart(2, '0');
-                
-                preferredDateInput.setAttribute('min', `${year}-${month}-${day}`);
-            };
-
-            // Function to generate time slots
-            const generateTimeSlots = () => {
-                preferredTimeSelect.innerHTML = '<option value="">--SELECT--</option>';
-                const startTime = 8 * 60; // 8:00 AM in minutes
-                const endTime = 17 * 60; // 5:00 PM in minutes
-                const slotDuration = 30; // 30 minutes
-
-                let currentTime = startTime;
-                while (currentTime <= endTime) {
-                    const hours = Math.floor(currentTime / 60);
-                    const minutes = currentTime % 60;
-                    
-                    const formattedHours = String(hours).padStart(2, '0');
-                    const formattedMinutes = String(minutes).padStart(2, '0');
-                    const timeString = `${formattedHours}:${formattedMinutes}`;
-                    
-                    const option = document.createElement('option');
-                    option.value = timeString;
-                    option.textContent = timeString;
-                    preferredTimeSelect.appendChild(option);
-                    
-                    currentTime += slotDuration;
-                }
-            };
-
-            // Function to check for time slot availability and update button state
-            const checkAvailability = () => {
-                const healthCenter = document.getElementById('healthCenter').value;
-                const date = preferredDateInput.value;
-                const time = preferredTimeSelect.value;
-                
-                // Reset availability message and button state
-                availabilityMessage.textContent = '';
-                submitButton.disabled = true;
-                submitButton.classList.remove('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
-                submitButton.classList.add('bg-gray-400', 'text-gray-600');
-
-                if (!healthCenter || !date || !time) {
-                    return;
-                }
-                
-                const healthCenterRef = ref(database, `appointments/${healthCenter}`);
-                onValue(healthCenterRef, (snapshot) => {
-                    const data = snapshot.val();
-                    let isBooked = false;
-                    if (data) {
-                        for (const key in data) {
-                            if (data[key].preferredDate === date && data[key].preferredTime === time) {
-                                isBooked = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (isBooked) {
-                        availabilityMessage.textContent = 'This time slot is already booked. Please choose another one.';
-                        availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
-                    } else {
-                        availabilityMessage.textContent = 'This time slot is available.';
-                        availabilityMessage.className = 'text-sm mt-1 text-green-600 font-semibold';
-                        submitButton.disabled = false;
-                        submitButton.classList.remove('bg-gray-400', 'text-gray-600');
-                        submitButton.classList.add('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
-                    }
-                }, { onlyOnce: true });
-            };
-
-            // Initial setup
-            setMinDate();
-            generateTimeSlots();
-            privacyModal.classList.remove('hidden');
-
-            // Handle privacy acknowledgment
-            acknowledgePrivacyButton.addEventListener('click', () => {
-                privacyModal.classList.add('hidden');
-            });
-
-            // Listen for changes on the time and date inputs
-            preferredDateInput.addEventListener('change', checkAvailability);
-            preferredTimeSelect.addEventListener('change', checkAvailability);
-            document.getElementById('healthCenter').addEventListener('change', checkAvailability);
-
-            // Handle "Next" button click
-            nextButton.addEventListener('click', (event) => {
-                if (personalInfoForm.checkValidity()) {
-                    event.preventDefault();
-                    step1.classList.add('hidden');
-                    step2.classList.remove('hidden');
-                    checkAvailability(); // Initial check when moving to step 2
-                } else {
-                    personalInfoForm.reportValidity();
-                }
-            });
-
-            // Handle "Back" button click
-            backButton.addEventListener('click', () => {
-                step2.classList.add('hidden');
-                step1.classList.remove('hidden');
-            });
-
-            // Handle "Submit" button click (shows confirmation modal)
-            scheduleForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                if (scheduleForm.checkValidity()) {
-                    // Collect all form data
-                    const personalData = new FormData(personalInfoForm);
-                    const scheduleData = new FormData(scheduleForm);
-                    const allData = {};
-
-                    personalData.forEach((value, key) => allData[key] = value);
-                    scheduleData.forEach((value, key) => allData[key] = value);
-
-                    // Populate confirmation modal with details
-                    confirmationDetails.innerHTML = `
-                        <p><strong class="font-semibold">Full Name:</strong> ${allData.firstName} ${allData.middleName} ${allData.lastName}</p>
-                        <p><strong class="font-semibold">Age:</strong> ${allData.age}</p>
-                        <p><strong class="font-semibold">Sex:</strong> ${allData.sex}</p>
-                        <p><strong class="font-semibold">Email:</strong> ${allData.email}</p>
-                        <p><strong class="font-semibold">Phone:</strong> ${allData.phone}</p>
-                        <p><strong class="font-semibold">Service:</strong> ${allData.services}</p>
-                        <p><strong class="font-semibold">Health Center:</strong> ${healthCenters[allData.healthCenter]}</p>
-                        <p><strong class="font-semibold">Specific Details:</strong> ${allData.specificDetails}</p>
-                        <p><strong class="font-semibold">Date:</strong> ${allData.preferredDate}</p>
-                        <p><strong class="font-semibold">Time:</strong> ${allData.preferredTime}</p>
-                    `;
-
-                    // Hide the form and show the modal
-                    formContainer.classList.add('hidden');
-                    confirmationModal.classList.remove('hidden');
-
-                } else {
-                    scheduleForm.reportValidity();
-                }
-            });
-
-            // Handle "Edit" button click on confirmation modal
-            editButton.addEventListener('click', () => {
-                confirmationModal.classList.add('hidden');
-                formContainer.classList.remove('hidden');
-            });
-
-            // Handle "Confirm" button click on confirmation modal (final submission)
-            confirmButton.addEventListener('click', async () => {
-                const personalData = new FormData(personalInfoForm);
-                const scheduleData = new FormData(scheduleForm);
-                const allData = {};
-                
-                personalData.forEach((value, key) => allData[key] = value);
-                scheduleData.forEach((value, key) => allData[key] = value);
-                
-                try {
-                    const selectedHealthCenter = allData.healthCenter;
-                    const healthCenterRef = ref(database, `appointments/${selectedHealthCenter}`);
-                    
-                    const newAppointmentRef = push(healthCenterRef);
-                    const queueNumber = newAppointmentRef.key;
-                    
-                    // Count how many appointments are already in the queue
-                    let currentQueueCount = 0;
-                    onValue(healthCenterRef, (snapshot) => {
-                        const data = snapshot.val();
-                        if (data) {
-                            // Filter appointments that are not 'Cancelled' to get a more accurate queue count
-                            const activeAppointments = Object.values(data).filter(appt => appt.status !== 'Cancelled');
-                            currentQueueCount = activeAppointments.length + 1;
-                        } else {
-                            currentQueueCount = 1;
-                        }
-                    }, { onlyOnce: true });
-
-                    // Add the requested fields and a timestamp
-                    const appointmentData = {
-                        ...allData,
-                        queueNumber: queueNumber,
-                        readableId: `appt-${Math.floor(Math.random() * 10000)}`,
-                        status: "pending", // Set status to pending
-                        timestamp: new Date().toISOString()
-                    };
-
-                    await set(newAppointmentRef, appointmentData);
-                    
-                    document.getElementById('queueNumberDisplay').textContent = currentQueueCount;
-
-                    console.log(`Final Appointment Confirmed and Saved to ${selectedHealthCenter} Database!`);
-                    confirmationModal.classList.add('hidden');
-                    successMessage.classList.remove('hidden');
-                } catch (error) {
-                    console.error("Error saving appointment: ", error);
-                    alert("An error occurred. Please try again.");
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+        // All health centers and their display names with associated services
+        const healthCenterData = {
+            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "basic_laboratory", "basic_xray", "vaccination", "dental", "others"] },
+            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "southville": { name: "SOUTHVILLE HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "putatan": { name: "PUTATAN HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "putatan_annex": { name: "PUTATAN ANNEX HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "lakeview": { name: "LAKEVIEW HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "ayala_alabang": { name: "AYALA ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "

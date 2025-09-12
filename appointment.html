@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City Health Office - Appointment Form</title>
+    <title>City Health Office - Set Appointment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -204,7 +204,7 @@
                     <div class="text-center">
                         <svg class="mx-auto h-16 w-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <h3 class="text-2xl font-bold text-green-700 mt-4">Appointment Pending</h3>
-                        <p class="text-gray-600 mt-2">Your appointment has been successfully submitted. Your queue number is:</p>
+                        <p class="text-gray-600 mt-2">Your appointment has been successfully submitted. You are currently in line at:</p>
                         <p class="mt-4 text-3xl font-bold text-blue-800" id="queueNumberDisplay"></p>
                         <p class="mt-2 text-sm text-gray-600">A representative will confirm your appointment via email or phone call as soon as possible.</p>
                         <div class="mt-6">
@@ -215,8 +215,6 @@
                     </div>
                 </div>
             </div>
-            
-            <p id="userIdDisplay" class="text-sm text-center text-gray-500 mt-4 hidden">User ID: <span id="userIdSpan"></span></p>
 
         </div>
     </main>
@@ -228,23 +226,29 @@
     </footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // This is a global variable provided by the environment.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-        setLogLevel('Debug');
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
+            authDomain: "cho-clinic.firebaseapp.com",
+            databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "cho-clinic",
+            storageBucket: "cho-clinic.firebasestorage.app",
+            messagingSenderId: "1078609107976",
+            appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
+            measurementId: "G-FHE4TNMD0X"
+        };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        let userId = null;
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
 
+        // All health centers and their display names with associated services
         const healthCenterData = {
             "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "basic_laboratory", "basic_xray", "vaccination", "dental", "others"] },
             "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
@@ -265,24 +269,7 @@
             "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] }
         };
 
-        // Authenticate the user anonymously
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                document.getElementById('userIdSpan').textContent = userId;
-                document.getElementById('userIdDisplay').classList.remove('hidden');
-                console.log("Authenticated with user ID:", userId);
-                // Now that the user is authenticated, initialize the form logic.
-                initializeFormLogic();
-            } else {
-                console.log("Signing in anonymously...");
-                await signInAnonymously(auth);
-            }
-        });
-
-        // This function contains all the form logic and event listeners.
-        // It will be called only after the user is authenticated.
-        const initializeFormLogic = () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const servicesSelect = document.getElementById('services');
             const healthCenterSelect = document.getElementById('healthCenter');
             const appointmentForm = document.getElementById('appointmentForm');
@@ -340,17 +327,6 @@
                 }
             };
             
-            // Function to populate the health center dropdown with all available centers
-            const populateAllHealthCenters = () => {
-                healthCenterSelect.innerHTML = '<option value="">--SELECT--</option>';
-                for (const key in healthCenterData) {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = healthCenterData[key].name;
-                    healthCenterSelect.appendChild(option);
-                }
-            };
-
             // Function to filter health centers based on selected service
             const filterHealthCentersByService = () => {
                 const selectedService = servicesSelect.value;
@@ -365,14 +341,11 @@
                             healthCenterSelect.appendChild(option);
                         }
                     }
-                } else {
-                    // If no service is selected, show all health centers
-                    populateAllHealthCenters();
                 }
             };
 
             // This function checks for availability and enables/disables the submit button.
-            const checkAvailability = async () => {
+            const checkAvailability = () => {
                 const healthCenter = healthCenterSelect.value;
                 const date = preferredDateInput.value;
                 const time = preferredTimeSelect.value;
@@ -388,42 +361,39 @@
                     return;
                 }
 
+                // Show loading spinner while checking
                 loadingSpinner.classList.remove('hidden');
 
-                // Query Firestore for appointments with the selected health center, date, and time.
-                const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
-                const q = query(appointmentsRef, 
-                    where("healthCenter", "==", healthCenter),
-                    where("preferredDate", "==", date),
-                    where("preferredTime", "==", time)
-                );
-                
-                try {
-                    const querySnapshot = await getDocs(q);
-                    
-                    if (querySnapshot.empty) {
+                const healthCenterRef = ref(database, `appointments/${healthCenter}`);
+                onValue(healthCenterRef, (snapshot) => {
+                    loadingSpinner.classList.add('hidden');
+                    const data = snapshot.val();
+                    let isBooked = false;
+                    if (data) {
+                        for (const key in data) {
+                            if (data[key].preferredDate === date && data[key].preferredTime === time) {
+                                isBooked = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isBooked) {
+                        availabilityMessage.textContent = 'This time slot is already booked. Please choose another one.';
+                        availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
+                    } else {
                         availabilityMessage.textContent = 'This time slot is available.';
                         availabilityMessage.className = 'text-sm mt-1 text-green-600 font-semibold';
                         submitButton.disabled = false;
                         submitButton.classList.remove('bg-gray-400', 'text-gray-600');
                         submitButton.classList.add('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
-                    } else {
-                        availabilityMessage.textContent = 'This time slot is already booked. Please choose another one.';
-                        availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
                     }
-                } catch (error) {
-                    console.error("Error checking availability:", error);
-                    availabilityMessage.textContent = 'An error occurred. Please try again.';
-                    availabilityMessage.className = 'text-sm mt-1 text-red-500 font-semibold';
-                } finally {
-                    loadingSpinner.classList.add('hidden');
-                }
+                }, { onlyOnce: true });
             };
 
             // Initial setup
             setMinDate();
             generateTimeSlots();
-            populateAllHealthCenters();
             privacyModal.classList.remove('hidden');
 
             // Handle privacy acknowledgment
@@ -443,7 +413,7 @@
             healthCenterSelect.addEventListener('change', checkAvailability);
 
             // Handle "Submit" button click (shows confirmation modal)
-            appointmentForm.addEventListener('submit', async (event) => {
+            appointmentForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (appointmentForm.checkValidity()) {
                     // Collect all form data
@@ -486,30 +456,40 @@
                 new FormData(appointmentForm).forEach((value, key) => allData[key] = value);
                 
                 try {
-                    const appointmentsCollection = collection(db, `artifacts/${appId}/public/data/appointments`);
+                    const selectedHealthCenter = allData.healthCenter;
+                    const healthCenterRef = ref(database, `appointments/${selectedHealthCenter}`);
                     
-                    // Add the appointment data to Firestore
-                    const newAppointmentRef = await addDoc(appointmentsCollection, {
-                        ...allData,
-                        readableId: `appt-${Math.floor(Math.random() * 10000)}`,
-                        status: "pending",
-                        timestamp: new Date().toISOString(),
-                        userId: userId
-                    });
+                    const newAppointmentRef = push(healthCenterRef);
+                    const queueNumber = newAppointmentRef.key;
+                    
+                    // Count how many appointments are already in the queue
+                    let currentQueueCount = 0;
+                    onValue(healthCenterRef, (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            const activeAppointments = Object.values(data).filter(appt => appt.status !== 'Cancelled');
+                            currentQueueCount = activeAppointments.length + 1;
+                        } else {
+                            currentQueueCount = 1;
+                        }
+                    }, { onlyOnce: true });
 
-                    // Listen for changes to the entire appointments collection to get the queue number
-                    onSnapshot(appointmentsCollection, (snapshot) => {
-                        const allAppointments = snapshot.docs.map(doc => doc.data());
-                        const activeAppointments = allAppointments.filter(appt => appt.status !== 'Cancelled');
-                        
-                        const queueNumber = activeAppointments.length;
-                        document.getElementById('queueNumberDisplay').textContent = queueNumber;
-                    });
+                    // Add the requested fields and a timestamp
+                    const appointmentData = {
+                        ...allData,
+                        queueNumber: queueNumber,
+                        readableId: `appt-${Math.floor(Math.random() * 10000)}`,
+                        status: "pending", // Set status to pending
+                        timestamp: new Date().toISOString()
+                    };
+
+                    await set(newAppointmentRef, appointmentData);
                     
-                    console.log("Appointment added with ID:", newAppointmentRef.id);
+                    document.getElementById('queueNumberDisplay').textContent = currentQueueCount;
+
+                    console.log(`Final Appointment Confirmed and Saved to ${selectedHealthCenter} Database!`);
                     confirmationModal.classList.add('hidden');
                     successMessage.classList.remove('hidden');
-
                 } catch (error) {
                     console.error("Error saving appointment: ", error);
                     const errorMessageModal = document.createElement('div');
@@ -531,7 +511,7 @@
                     document.body.appendChild(errorMessageModal);
                 }
             });
-        };
+        });
     </script>
 </body>
 </html>

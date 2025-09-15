@@ -259,22 +259,23 @@
 
         // All health centers and their display names with associated services
         const healthCenterData = {
-            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_cert/transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "laboratory", "x-ray", "vaccination", "dental", "others"] },
-            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_cert/transfer_exhumation", "water_laboratory", "medical_certificate", "sanitary_permit", "others"] },
+            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "laboratory", "dental", "others"] },
             "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
-            "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
-            "southville": { name: "SOUTHVILLE HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "laboratory", "vaccination", "others"] },
+            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "laboratory", "vaccination", "dental", "others"] },
+            "southville": { name: "SOUTHVILLE HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "vaccination", "laboratory", "others"] },
             "putatan": { name: "PUTATAN HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "dental", "laboratory", "x-ray", "vaccination", "others"] },
-            "putatan_annex": { name: "PUTATAN ANNEX HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "putatan_annex": { name: "PUTATAN ANNEX HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "laboratory", "dental", "others"] },
             "lakeview": { name: "LAKEVIEW HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
-            "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "laboratory", "dental", "others"] },
+            "bayanan_annex": { name: "BAYANAN ANNEX HEALTH CENTER", services: ["checkup", "vaccination", "dental", "laboratory", "others"] },
             "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "dental", "laboratory", "vaccination", "others"] },
             "ayala_alabang": { name: "AYALA ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
+            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "laboratory", "medical_certificate", "vaccination", "dental", "others"] },
             "sitio_sto_nino": { name: "SITIO STO. NINO HEALTH CENTER", services: ["checkup", "medical_certificate", "others"] },
             "buli": { name: "BULI HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
-            "sucat": { name: "SUCAT HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "sucat": { name: "SUCAT HEALTH CENTER", services: ["checkup", "vaccination", "laboratory", "medical_certificate", "dental", "others"] },
             "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others", "dental"] }
         };
 
@@ -476,92 +477,50 @@
                         <p><strong class="font-semibold">Phone:</strong> ${allData.phone}</p>
                         <p><strong class="font-semibold">Service:</strong> ${selectedService}</p>
                         <p><strong class="font-semibold">Health Center:</strong> ${selectedHealthCenter}</p>
-                        <p><strong class="font-semibold">Specific Details:</strong> ${allData.specificDetails}</p>
-                        <p><strong class="font-semibold">Date:</strong> ${allData.preferredDate}</p>
-                        <p><strong class="font-semibold">Time:</strong> ${allData.preferredTime}</p>
+                        <p><strong class="font-semibold">Preferred Date:</strong> ${allData.preferredDate}</p>
+                        <p><strong class="font-semibold">Preferred Time:</strong> ${allData.preferredTime}</p>
+                        <p><strong class="font-semibold">Details:</strong> ${allData.specificDetails}</p>
                     `;
-
-                    // Hide the form and show the modal
-                    formContainer.classList.add('hidden');
+                    
                     confirmationModal.classList.remove('hidden');
-
-                } else {
-                    scheduleForm.reportValidity();
+                    formContainer.classList.add('hidden');
                 }
             });
 
-            // Handle "Edit" button click on confirmation modal
+            // Handle "Edit" button click in modal
             editButton.addEventListener('click', () => {
                 confirmationModal.classList.add('hidden');
                 formContainer.classList.remove('hidden');
             });
 
-            // Handle "Confirm" button click on confirmation modal (final submission)
-            confirmButton.addEventListener('click', async () => {
+            // Handle "Confirm" button click in modal
+            confirmButton.addEventListener('click', () => {
+                // Submit data to Firebase
                 const personalData = new FormData(personalInfoForm);
                 const scheduleData = new FormData(scheduleForm);
                 const allData = {};
-                
                 personalData.forEach((value, key) => allData[key] = value);
                 scheduleData.forEach((value, key) => allData[key] = value);
-                
-                try {
-                    const selectedHealthCenter = allData.healthCenter;
-                    const healthCenterRef = ref(database, `appointments/${selectedHealthCenter}`);
-                    
-                    const newAppointmentRef = push(healthCenterRef);
-                    const queueNumber = newAppointmentRef.key;
-                    
-                    // Count how many appointments are already in the queue
-                    let currentQueueCount = 0;
-                    onValue(healthCenterRef, (snapshot) => {
-                        const data = snapshot.val();
-                        if (data) {
-                            // Filter appointments that are not 'Cancelled' to get a more accurate queue count
-                            const activeAppointments = Object.values(data).filter(appt => appt.status !== 'Cancelled');
-                            currentQueueCount = activeAppointments.length + 1;
-                        } else {
-                            currentQueueCount = 1;
-                        }
-                    }, { onlyOnce: true });
 
-                    // Add the requested fields and a timestamp
-                    const appointmentData = {
-                        ...allData,
-                        queueNumber: queueNumber,
-                        readableId: `appt-${Math.floor(Math.random() * 10000)}`,
-                        status: "pending", // Set status to pending
-                        timestamp: new Date().toISOString()
-                    };
+                const healthCenterKey = allData.healthCenter;
+                const appointmentsRef = ref(database, `appointments/${healthCenterKey}`);
 
-                    await set(newAppointmentRef, appointmentData);
-                    
-                    document.getElementById('queueNumberDisplay').textContent = currentQueueCount;
-
-                    console.log(`Final Appointment Confirmed and Saved to ${selectedHealthCenter} Database!`);
+                push(appointmentsRef, {
+                    ...allData,
+                    timestamp: new Date().toISOString()
+                }).then(() => {
+                    console.log("Appointment submitted successfully!");
                     confirmationModal.classList.add('hidden');
                     successMessage.classList.remove('hidden');
-                } catch (error) {
-                    console.error("Error saving appointment: ", error);
-                    // Use a more user-friendly modal or message box instead of alert()
-                    const errorMessageModal = document.createElement('div');
-                    errorMessageModal.innerHTML = `
-                        <div class="fixed inset-0 bg-red-500 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-                            <div class="relative p-8 bg-white w-full max-w-lg mx-auto rounded-2xl shadow-xl border-2 border-red-400">
-                                <div class="text-center">
-                                    <h3 class="text-2xl font-bold text-red-700 mt-4">Error</h3>
-                                    <p class="text-gray-600 mt-2">An error occurred while saving your appointment. Please try again.</p>
-                                    <div class="mt-6">
-                                        <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove();" class="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(errorMessageModal);
-                }
+                    // Fetch the latest count for the queue number
+                    onValue(appointmentsRef, (snapshot) => {
+                        const count = snapshot.size;
+                        document.getElementById('queueNumberDisplay').textContent = count;
+                    }, { onlyOnce: true });
+                }).catch((error) => {
+                    console.error("Error submitting appointment: ", error);
+                    alert("There was an error submitting your appointment. Please try again.");
+                });
             });
         });
     </script>

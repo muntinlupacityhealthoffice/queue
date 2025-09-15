@@ -118,32 +118,22 @@
                                 <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
                                 <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
-                                    <option value="checkup">General Consultation</option>
-                                    <option value="dental">Dental</option>
+                                    <option value="death_transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
+                                    <option value="water_laboratory">Water Laboratory</option>
+                                    <option value="checkup">General Consultation and Treatment</option>
+                                    <option value="medical_certificate">Issuance of medical Certificate</option>
+                                    <option value="sanitary_permit">Issuance of Sanitary Permit</option>
+                                    <option value="basic_laboratory">Basic Laboratory</option>
+                                    <option value="basic_xray">Basic x-ray</option>
                                     <option value="vaccination">Vaccination</option>
+                                    <option value="dental">Dental</option>
+                                    <option value="others">Others</option>
                                 </select>
                             </div>
                             <div>
                                 <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
                                 <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
-                                    <option value="city_health_office">CITY HEALTH OFFICE</option>
-                                    <option value="tunasan">TUNASAN HEALTH CENTER</option>
-                                    <option value="victoria">VICTORIA HEALTH CENTER</option>
-                                    <option value="laguerta">LAGUERTA HEALTH CENTER</option>
-                                    <option value="poblacion">POBLACION HEALTH CENTER</option>
-                                    <option value="southville">SOUTHVILLE HEALTH CENTER</option>
-                                    <option value="putatan">PUTATAN HEALTH CENTER</option>
-                                    <option value="putatan_annex">PUTATAN ANNEX HEALTH CENTER</option>
-                                    <option value="lakeview">LAKEVIEW HEALTH CENTER</option>
-                                    <option value="bayan_main">BAYANAN MAIN HEALTH CENTER</option>
-                                    <option value="alabang">ALABANG HEALTH CENTER</option>
-                                    <option value="ayala_alabang">AYALA ALABANG HEALTH CENTER</option>
-                                    <option value="cupang">CUPANG HEALTH CENTER</option>
-                                    <option value="sitio_sto_nino">SITIO STO. NINO HEALTH CENTER</option>
-                                    <option value="buli">BULI HEALTH CENTER</option>
-                                    <option value="sucat">SUCAT HEALTH CENTER</option>
-                                    <option value="bagong_silang">BAGONG SILANG HEALTH CENTER</option>
                                 </select>
                             </div>
                         </div>
@@ -175,7 +165,13 @@
                         </div>
                         <div class="flex justify-between">
                             <button type="button" id="backButton" class="w-full sm:w-auto px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors duration-200">Back</button>
-                            <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-600 font-semibold rounded-full shadow-md transition-colors duration-200" disabled>Submit</button>
+                            <button type="submit" id="submitButton" class="flex items-center justify-center w-full sm:w-auto px-6 py-2 bg-gray-400 text-gray-600 font-semibold rounded-full shadow-md transition-colors duration-200" disabled>
+                                <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Submit
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -261,28 +257,30 @@
         const analytics = getAnalytics(app);
         const database = getDatabase(app);
 
-        // All health centers and their display names
-        const healthCenters = {
-            "city_health_office": "CITY HEALTH OFFICE",
-            "tunasan": "TUNASAN HEALTH CENTER",
-            "victoria": "VICTORIA HEALTH CENTER",
-            "laguerta": "LAGUERTA HEALTH CENTER",
-            "poblacion": "POBLACION HEALTH CENTER",
-            "southville": "SOUTHVILLE HEALTH CENTER",
-            "putatan": "PUTATAN HEALTH CENTER",
-            "putatan_annex": "PUTATAN ANNEX HEALTH CENTER",
-            "lakeview": "LAKEVIEW HEALTH CENTER",
-            "bayan_main": "BAYANAN MAIN HEALTH CENTER",
-            "alabang": "ALABANG HEALTH CENTER",
-            "ayala_alabang": "AYALA ALABANG HEALTH CENTER",
-            "cupang": "CUPANG HEALTH CENTER",
-            "sitio_sto_nino": "SITIO STO. NINO HEALTH CENTER",
-            "buli": "BULI HEALTH CENTER",
-            "sucat": "SUCAT HEALTH CENTER",
-            "bagong_silang": "BAGONG SILANG HEALTH CENTER"
+        // All health centers and their display names with associated services
+        const healthCenterData = {
+            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "basic_laboratory", "basic_xray", "vaccination", "dental", "others"] },
+            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "southville": { name: "SOUTHVILLE HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "putatan": { name: "PUTATAN HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "putatan_annex": { name: "PUTATAN ANNEX HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "lakeview": { name: "LAKEVIEW HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "ayala_alabang": { name: "AYALA ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "sitio_sto_nino": { name: "SITIO STO. NINO HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "buli": { name: "BULI HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "sucat": { name: "SUCAT HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
+            "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+            const servicesSelect = document.getElementById('services');
+            const healthCenterSelect = document.getElementById('healthCenter');
             const step1 = document.getElementById('step1');
             const step2 = document.getElementById('step2');
             const nextButton = document.getElementById('nextButton');
@@ -299,6 +297,7 @@
             const formContainer = document.getElementById('formContainer');
             const availabilityMessage = document.getElementById('availabilityMessage');
             const submitButton = document.getElementById('submitButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
             // Privacy modal elements
             const privacyModal = document.getElementById('privacyModal');
@@ -341,25 +340,55 @@
                     currentTime += slotDuration;
                 }
             };
+            
+            // Function to filter health centers based on selected service
+            const filterHealthCentersByService = () => {
+                const selectedService = servicesSelect.value;
+                healthCenterSelect.innerHTML = '<option value="">--SELECT--</option>';
+                
+                if (selectedService) {
+                    for (const key in healthCenterData) {
+                        if (healthCenterData[key].services.includes(selectedService)) {
+                            const option = document.createElement('option');
+                            option.value = key;
+                            option.textContent = healthCenterData[key].name;
+                            healthCenterSelect.appendChild(option);
+                        }
+                    }
+                }
+            };
 
-            // Function to check for time slot availability and update button state
+            // This function checks for availability and enables/disables the submit button.
             const checkAvailability = () => {
-                const healthCenter = document.getElementById('healthCenter').value;
+                const healthCenter = healthCenterSelect.value;
                 const date = preferredDateInput.value;
                 const time = preferredTimeSelect.value;
+                
+                console.log('Checking availability for:', {
+                    healthCenter: healthCenter || 'Not Selected',
+                    date: date || 'Not Selected',
+                    time: time || 'Not Selected'
+                });
                 
                 // Reset availability message and button state
                 availabilityMessage.textContent = '';
                 submitButton.disabled = true;
                 submitButton.classList.remove('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
                 submitButton.classList.add('bg-gray-400', 'text-gray-600');
+                loadingSpinner.classList.add('hidden');
+
 
                 if (!healthCenter || !date || !time) {
+                    console.log('One or more required fields are empty. Button remains disabled.');
                     return;
                 }
-                
+
+                // Show loading spinner while checking
+                loadingSpinner.classList.remove('hidden');
+
                 const healthCenterRef = ref(database, `appointments/${healthCenter}`);
                 onValue(healthCenterRef, (snapshot) => {
+                    loadingSpinner.classList.add('hidden');
                     const data = snapshot.val();
                     let isBooked = false;
                     if (data) {
@@ -377,6 +406,7 @@
                     } else {
                         availabilityMessage.textContent = 'This time slot is available.';
                         availabilityMessage.className = 'text-sm mt-1 text-green-600 font-semibold';
+                        // This is the line that enables the button!
                         submitButton.disabled = false;
                         submitButton.classList.remove('bg-gray-400', 'text-gray-600');
                         submitButton.classList.add('bg-[#ffc107]', 'text-gray-900', 'hover:bg-[#ffa000]', 'focus:ring-[#ffc107]', 'focus:ring-offset-2');
@@ -394,10 +424,16 @@
                 privacyModal.classList.add('hidden');
             });
 
-            // Listen for changes on the time and date inputs
+            // Listen for changes on the service select to filter health centers
+            servicesSelect.addEventListener('change', () => {
+                filterHealthCentersByService();
+                checkAvailability();
+            });
+
+            // Listen for changes on the time, date, and health center inputs
             preferredDateInput.addEventListener('change', checkAvailability);
             preferredTimeSelect.addEventListener('change', checkAvailability);
-            document.getElementById('healthCenter').addEventListener('change', checkAvailability);
+            healthCenterSelect.addEventListener('change', checkAvailability);
 
             // Handle "Next" button click
             nextButton.addEventListener('click', (event) => {
@@ -430,14 +466,16 @@
                     scheduleData.forEach((value, key) => allData[key] = value);
 
                     // Populate confirmation modal with details
+                    const selectedHealthCenter = healthCenterData[allData.healthCenter].name;
+                    const selectedService = servicesSelect.options[servicesSelect.selectedIndex].text;
                     confirmationDetails.innerHTML = `
                         <p><strong class="font-semibold">Full Name:</strong> ${allData.firstName} ${allData.middleName} ${allData.lastName}</p>
                         <p><strong class="font-semibold">Age:</strong> ${allData.age}</p>
                         <p><strong class="font-semibold">Sex:</strong> ${allData.sex}</p>
                         <p><strong class="font-semibold">Email:</strong> ${allData.email}</p>
                         <p><strong class="font-semibold">Phone:</strong> ${allData.phone}</p>
-                        <p><strong class="font-semibold">Service:</strong> ${allData.services}</p>
-                        <p><strong class="font-semibold">Health Center:</strong> ${healthCenters[allData.healthCenter]}</p>
+                        <p><strong class="font-semibold">Service:</strong> ${selectedService}</p>
+                        <p><strong class="font-semibold">Health Center:</strong> ${selectedHealthCenter}</p>
                         <p><strong class="font-semibold">Specific Details:</strong> ${allData.specificDetails}</p>
                         <p><strong class="font-semibold">Date:</strong> ${allData.preferredDate}</p>
                         <p><strong class="font-semibold">Time:</strong> ${allData.preferredTime}</p>
@@ -505,7 +543,24 @@
                     successMessage.classList.remove('hidden');
                 } catch (error) {
                     console.error("Error saving appointment: ", error);
-                    alert("An error occurred. Please try again.");
+                    // Use a more user-friendly modal or message box instead of alert()
+                    const errorMessageModal = document.createElement('div');
+                    errorMessageModal.innerHTML = `
+                        <div class="fixed inset-0 bg-red-500 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+                            <div class="relative p-8 bg-white w-full max-w-lg mx-auto rounded-2xl shadow-xl border-2 border-red-400">
+                                <div class="text-center">
+                                    <h3 class="text-2xl font-bold text-red-700 mt-4">Error</h3>
+                                    <p class="text-gray-600 mt-2">An error occurred while saving your appointment. Please try again.</p>
+                                    <div class="mt-6">
+                                        <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove();" class="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200">
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(errorMessageModal);
                 }
             });
         });

@@ -118,13 +118,13 @@
                                 <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
                                 <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     <option value="">--SELECT--</option>
-                                    <option value="death_transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
+                                    <option value="death_cert/transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
                                     <option value="water_laboratory">Water Laboratory</option>
                                     <option value="checkup">General Consultation</option>
                                     <option value="medical_certificate">Issuance of medical Certificate</option>
                                     <option value="sanitary_permit">Issuance of Sanitary Permit</option>
-                                    <option value="basic_laboratory">Laboratory</option>
-                                    <option value="basic_xray">x-ray</option>
+                                    <option value="laboratory">Laboratory</option>
+                                    <option value="x-ray">x-ray</option>
                                     <option value="vaccination">Vaccination</option>
                                     <option value="dental">Dental</option>
                                     <option value="others">Others</option>
@@ -259,7 +259,7 @@
 
         // All health centers and their display names with associated services
         const healthCenterData = {
-            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "laboratory", "x-ray", "vaccination", "dental", "others"] },
+            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_cert/transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "laboratory", "x-ray", "vaccination", "dental", "others"] },
             "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
             "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
             "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },

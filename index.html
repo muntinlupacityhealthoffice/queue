@@ -3,57 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CHO</title>
+  <title>City Health Office</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth; /* enables smooth scrolling */
+    }
+  </style>
 </head>
-<body class="font-sans text-gray-800">
+<body class="bg-gray-50 text-gray-800">
 
-  <!-- Navbar -->
-  <header class="bg-blue-900 text-white shadow-md">
-    <div class="container mx-auto flex justify-between items-center p-4">
-      <h1 class="text-2xl font-bold">City Health Office</h1>
+  <!-- Header -->
+  <header class="bg-yellow-400 border-b-4 border-blue-900 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+      <!-- Logo + Title -->
+      <div class="flex items-center space-x-3">
+        <img src="logo.png" alt="Logo" class="h-12 w-12">
+        <h1 class="text-xl font-bold text-blue-900">CITY HEALTH OFFICE</h1>
+      </div>
+      <!-- Navigation -->
       <nav class="space-x-6">
-        <a href="#home" class="hover:text-blue-300">Home</a>
-        <a href="#about" class="hover:text-blue-300">About</a>
-        <a href="#services" class="hover:text-blue-300">Services</a>
-        <a href="#doctors" class="hover:text-blue-300">Doctors</a>
-        <a href="#contacts" class="hover:text-blue-300">Contact</a>
+        <a href="#home" class="text-black hover:text-blue-900 font-medium">HOME</a>
+        <a href="#about" class="text-black hover:text-blue-900 font-medium">ABOUT</a>
+        <a href="#services" class="text-black hover:text-blue-900 font-medium">SERVICES</a>
+        <a href="#contact" class="text-black hover:text-blue-900 font-medium">CONTACT</a>
       </nav>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section id="home" class="bg-blue-50 py-20 text-center">
-    <h2 class="text-4xl font-bold text-blue-900">Your Health, Our Priority</h2>
-    <p class="mt-4 text-lg text-gray-600">Providing compassionate care and trusted medical services for your family.</p>
-    <a href="preselection.html" class="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700">Book Appointment</a>
+  <!-- Home Section -->
+  <section id="home" class="text-center py-12 bg-gradient-to-b from-white to-yellow-100">
+    <h2 class="text-2xl font-bold text-blue-900">WELCOME!</h2>
+
+    <!-- Appointment Button -->
+    <div class="mt-6">
+      <a href="preselection.html" class="px-6 py-2 rounded-full border border-blue-800 text-blue-900 hover:bg-blue-900 hover:text-white transition font-medium">Appointment</a>
+    </div>
+
+    <!-- Info Text -->
+    <p class="mt-6 max-w-3xl mx-auto text-center text-yellow-900 font-medium">
+      Your health matters to us. The City Health Office now offers an easy online appointment system so you and your family can access health services at your local health center with less hassle and more convenience.
+    </p>
   </section>
-
+ 
   <!-- About Section -->
-  <section id="about" class="py-16 container mx-auto px-6">
-    <div class="grid md:grid-cols-2 gap-10 items-center">
-      <img src="https://via.placeholder.com/500x350" alt="Clinic Image" class="rounded-lg shadow-md">
-      <div>
-        <h3 class="text-3xl font-semibold text-blue-900">About Us</h3>
-        <p class="mt-4 text-gray-600">The City Health Office (CHO) was created under the Republic act No. 7160 also known as the Local Government Code where in public health service was one of the national functions devolved to local government units. It is the one in charge in the delivery of health services to the community and oversees the implementation of different health programs of the Department of Health (DOH). The CHO in its own building is located at Centennial Avenue, Tunasan, Muntinlupa City. It has 15 health centers (HC) and one health station distributed in the 9 barangays of the city and is instituted depending on the population of the barangay.
+  <section id="about" class="bg-grey-50 py-10">
+    <div class="bg-blue-900 text-white text-center py-2 font-semibold text-lg tracking-wide">
+      ABOUT
+    </div>
 
-The CHO generally manage the personnel and staff of the said office; it also coordinates with other government agencies and non-government agencies to ensure delivery of basic health care and promotion of health to the community. It also recommends to the Sangguniang Panglungsod through the Local Health Board an ordinance that will aid in the preservation and improvement of the public health.</p>
+    <div class="max-w-7xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <!-- Image -->
+      <div class="flex justify-center">
+        <img src="building.png" alt="City Health Office" class="rounded-lg shadow-lg w-full max-w-md">
+      </div>
+
+      <!-- Text -->
+      <div class="text-justify leading-relaxed space-y-4">
+        <p>
+          The City Health Office (CHO) was created under the Republic act No. 7160 also known as the Local Government Code where in public health service was one of the national functions devolved to local government units. It is the one in charge in the delivery of health services to the community and oversees the implementation of different health programs of the Department of Health (DOH).
+        </p>
+        <p>
+          The CHO in its own building is located at Centennial Avenue, Tunasan, Muntinlupa City. It has 15 health centers (HC) and one health station distributed in the 9 barangays of the city and is instituted depending on the population of the barangay.
+        </p>
+        <p>
+          The CHO generally manage the personnel and staff of the said office; it also coordinates with other government agencies and non-government agencies to ensure delivery of basic health care and promotion of health to the community. It also recommends to the Sangguniang Panglungsod through the Local Health Board an ordinance that will aid in the preservation and improvement of the public health.
+        </p>
       </div>
     </div>
   </section>
 
   <!-- Services Section -->
-  <section id="services" class="py-16 bg-blue-50">
-    <div class="container mx-auto px-6 text-center">
-      <h3 class="text-3xl font-semibold text-blue-900">Our Services</h3>
-      <div class="grid md:grid-cols-3 gap-8 mt-10">
-        <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg">
-          <h4 class="text-xl font-bold text-blue-800">General Checkup</h4>
-          <p class="mt-3 text-gray-600">Routine health checkups for prevention and early detection.</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg">
-          <h4 class="text-xl font-bold text-blue-800">Pediatrics</h4>
-          <p class="mt-3 text-gray-600">Specialized care for infants, children, and adolescents.</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg">
-          <h4 cla
+  <section id="services" class="bg-grey-50 py-10">
+    <div class="bg-blue-900 text-white text-center py-2 font-semibold text-lg tracking-wide">
+      SERVICES
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Issuance and release of Death certificates, Transfer certificates or 
+Authorization of exhumation remains</h3>
+        <p class="text-gray-600 mt-2">The City Health Office handles the issuance of death and transfer certificates, as well as exhumation permits, which are signed by the government physician.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Water Laboratory Services</h3>
+        <p class="text-gray-600 mt-2">The City Health Office operates a water laboratory that functions as a testing center to determine whether water is safe for human consumption, particularly for use in food establishments.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">General Consultation and Treatment Services</h3>
+        <p class="text-gray-600 mt-2">he CHO is responsible for delivering health services to the community and implementing various Department of Health (DOH) programs. 
+          These include:
+
+1. National Tuberculosis Program
+2. National Immunization Program
+3. Maternal, Neonatal, Child Health and Nutrition Program
+4. Rabies Program
+5. Dental Program
+6. Maternal and Child Health Program
+7. Family Planning, Reproductive Health, and STI Program
+8. Nutrition Program
+9. Non-Communicable Disease Program
+
+All these services are available in health centers across the barangays.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Issuance of medical Certificate required for newly hired and 
+promotion </h3>
+        <p class="text-gray-600 mt-2">The City Health Office issues and signs medical certificates from the Civil Service Commission for newly hired and promoted employees.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Issuance of Sanitary Permit</h3>
+        <p class="text-gray-600 mt-2">One of the functions of the City Health Office is to issue Sanitary Permit as one of 
+the requirements on the Sanitation Code.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Basic Laboratory Services</h3>
+        <p class="text-gray-600 mt-2">The City Health Office provides basic laboratories in health centers, serving as community-based facilities that deliver essential public health services.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="font-bold text-blue-900">Basic X-ray Services</h3>
+        <p class="text-gray-600 mt-2">The City Health Office offers basic X-ray services in health centers, providing community-based and patient-focused public health care.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="bg-yellow-50 py-10">
+    <div class="bg-blue-900 text-white text-center py-2 font-semibold text-lg tracking-wide">
+      CONTACT
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 mt-8 text-center">
+      <p class="text-gray-700 mb-4">📍 Centennial Avenue, Tunasan, Muntinlupa City</p>
+      <p class="text-gray-700 mb-4">📞 (02) 8 8541-3485</p>
+      <p class="text-gray-700 mb-4">✉️ cityhealthoffice@email.com</p>
+      <p class="text-gray-700">Open: Monday – Friday | 8:00 AM – 5:00 PM</p>
+    </div>
+  </section>
+
+
+  <!-- Footer -->
+  <footer class="bg-yellow-400 text-center py-4 mt-10 border-t-4 border-blue-900">
+    <p class="text-sm text-blue-900 font-medium">&copy; 2025 City Health Office. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function openModal() {
+      document.getElementById('appointmentModal').classList.remove('hidden');
+    }
+    function closeModal() {
+      document.getElementById('appointmentModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
+
+
+
+

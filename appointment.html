@@ -124,7 +124,7 @@
                                     <option value="medical_certificate">Issuance of medical Certificate</option>
                                     <option value="sanitary_permit">Issuance of Sanitary Permit</option>
                                     <option value="basic_laboratory">Laboratory</option>
-                                    <option value="basic_xray">Basic x-ray</option>
+                                    <option value="basic_xray">x-ray</option>
                                     <option value="vaccination">Vaccination</option>
                                     <option value="dental">Dental</option>
                                     <option value="others">Others</option>
@@ -259,23 +259,23 @@
 
         // All health centers and their display names with associated services
         const healthCenterData = {
-            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "basic_laboratory", "basic_xray", "vaccination", "dental", "others"] },
+            "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_transfer_exhumation", "water_laboratory", "checkup", "medical_certificate", "sanitary_permit", "laboratory", "x-ray", "vaccination", "dental", "others"] },
             "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
             "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
             "southville": { name: "SOUTHVILLE HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "putatan": { name: "PUTATAN HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "putatan": { name: "PUTATAN HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "dental", "laboratory", "x-ray", "vaccination", "others"] },
             "putatan_annex": { name: "PUTATAN ANNEX HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "lakeview": { name: "LAKEVIEW HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "lakeview": { name: "LAKEVIEW HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
             "bayan_main": { name: "BAYANAN MAIN HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "vaccination", "others"] },
+            "alabang": { name: "ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "sanitary_permit", "dental", "laboratory", "vaccination", "others"] },
             "ayala_alabang": { name: "AYALA ALABANG HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
-            "sitio_sto_nino": { name: "SITIO STO. NINO HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "buli": { name: "BULI HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] },
+            "cupang": { name: "CUPANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
+            "sitio_sto_nino": { name: "SITIO STO. NINO HEALTH CENTER", services: ["checkup", "medical_certificate", "others"] },
+            "buli": { name: "BULI HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "dental", "others"] },
             "sucat": { name: "SUCAT HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "others"] },
-            "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others"] }
+            "bagong_silang": { name: "BAGONG SILANG HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination", "others", "dental"] }
         };
 
         document.addEventListener('DOMContentLoaded', () => {

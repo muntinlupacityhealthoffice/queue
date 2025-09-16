@@ -31,7 +31,6 @@
             padding: 1.5rem;
             text-align: center;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            cursor: pointer;
             position: relative;
         }
         .clinic-card:hover {
@@ -46,7 +45,7 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="pictures/CHO LOGO.png" alt="City Health Logo" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="https://i.ibb.co/L150B20/Screenshot-2025-09-08-224815.png" alt="City Health Logo" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Admin Dashboard--- Appointments</h2>
@@ -57,13 +56,67 @@
     </header>
 
     <main class="container mx-auto p-8 flex-grow">
-        <!-- Moved search bar and clear button to the body -->
+        <!-- Search bar and clear button -->
         <div class="flex justify-end items-center space-x-2 mb-6">
             <input id="searchInput" type="text" placeholder="Search clinics..." class="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
             <button id="clearButton" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition">CLEAR</button>
         </div>
-
+        
         <div id="healthCentersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">ALABANG</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">AYALA ALABANG</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">BAGONG SILANG</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">BAYANAN ANNEX</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">BAYANAN MAIN</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">BULI</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">CITY HEALTH OFFICE</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">CUPANG</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">LAGUERTA</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">LAKEVIEW</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">POBLACION</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">PUTATAN</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">PUTATAN ANNEX</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">SITIO STO. NINO</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">SOUTHVILLE</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">SUCAT</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">TUNASAN</h3>
+            </a>
+            <a href="#" class="clinic-card flex flex-col items-center border-2 border-green-500">
+                <h3 class="text-lg font-semibold text-dark-blue mb-2">VICTORIA</h3>
+            </a>
         </div>
     </main>
 
@@ -75,60 +128,31 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const healthCentersGrid = document.getElementById('healthCentersGrid');
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearButton');
+            const clinics = document.querySelectorAll('.clinic-card');
 
-            const clinicDisplayNames = [
-                'TUNASAN', 'VICTORIA', 'LAGUERTA', 'POBLACION', 'SOUTHVILLE', 
-                'PUTATAN', 'PUTATAN ANNEX', 'LAKEVIEW', 'BAYANAN MAIN', 'ALABANG', 
-                'AYALA ALABANG', 'CUPANG', 'SITIO STO. NINO', 'BULI', 'SUCAT', 'BAGONG SILANG',
-                'CITY HEALTH OFFICE', 'BAYANAN ANNEX'
-            ];
-
-            function createHealthCenterCard(clinicName) {
-                const card = document.createElement('div');
-                card.classList.add('clinic-card', 'flex', 'flex-col', 'items-center', 'border-2', 'border-green-500');
-                
-                const name = document.createElement('h3');
-                name.textContent = clinicName;
-                name.classList.add('text-lg', 'font-semibold', 'text-dark-blue', 'mb-2');
-                card.appendChild(name);
-                
-                card.addEventListener('click', () => {
-                    const url = `clinic_page.html?clinic=${encodeURIComponent(clinicName)}`;
-                    window.location.href = url;
-                });
-                
-                return card;
-            }
-
-            // Function to render health center cards with an optional filter
-            function renderHealthCenters(filter = '') {
-                healthCentersGrid.innerHTML = '';
-                const filteredClinics = clinicDisplayNames.filter(name => 
-                    name.toLowerCase().includes(filter.toLowerCase())
-                );
-                
-                filteredClinics.forEach(name => {
-                    const card = createHealthCenterCard(name);
-                    healthCentersGrid.appendChild(card);
+            // Function to filter clinics based on search input
+            function filterClinics() {
+                const filterText = searchInput.value.toLowerCase();
+                clinics.forEach(clinic => {
+                    const clinicName = clinic.querySelector('h3').textContent.toLowerCase();
+                    if (clinicName.includes(filterText)) {
+                        clinic.style.display = 'flex';
+                    } else {
+                        clinic.style.display = 'none';
+                    }
                 });
             }
 
-            // Add an event listener to the search input for real-time filtering
-            searchInput.addEventListener('keyup', (e) => {
-                renderHealthCenters(e.target.value);
-            });
+            // Event listener for typing in the search bar
+            searchInput.addEventListener('keyup', filterClinics);
 
-            // Add a click event listener to the clear button to reset the search
+            // Event listener for the clear button
             clearButton.addEventListener('click', () => {
                 searchInput.value = '';
-                renderHealthCenters();
+                filterClinics();
             });
-
-            // Initial rendering of all health centers
-            renderHealthCenters();
         });
     </script>
 </body>

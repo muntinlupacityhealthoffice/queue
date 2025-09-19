@@ -467,7 +467,7 @@
                         
                         if (button.textContent === 'Confirm?') {
                             // This is the second click, proceed with the update/delete
-                            const appointmentRef = ref(database, `appointments/city health office/${key}`);
+                            const appointmentRef = ref(database, `appointments/city_health_office/${key}`);
 
                             if (action === 'delete') {
                                 remove(appointmentRef)

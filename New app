@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Medicine Claim - Offline Admin App</title>
+  <style>
+    :root{--bg:#f6f8fa;--card:#fff;--accent:#2563eb;--danger:#dc2626;--muted:#6b7280}
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{margin:0;background:var(--bg);padding:20px}
+    .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:18px}
+    header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    h1{margin:0;font-size:20px}
+    small{color:var(--muted)}
+    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+    label{display:block;font-size:13px;margin-top:8px;color:var(--muted)}
+    input[type="text"], input[type="number"]{width:100%;padding:8px;border-radius:6px;border:1px solid #e6e9ee;margin-top:6px}
+    button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid #dbeafe}
+    .med-list{margin:8px 0;padding-left:16px}
+    .row{display:flex;gap:8px;align-items:center}
+    .small-btn{padding:6px 8px;font-size:13px;border-radius:6px}
+    .published-list{max-height:520px;overflow:auto;margin-top:8px}
+    .client-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px;border-radius:8px;border:1px solid #eef2ff;margin-bottom:8px;background:#fbfdff}
+    .client-info p{margin:0;font-weight:600}
+    .client-info ul{margin:6px 0 0 16px;padding:0}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;background:#e6f0ff;color:#0f172a}
+    .danger{background:#fee2e2;color:var(--danger)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    .footer-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .muted{color:var(--muted);font-size:13px}
+    .warn{color:var(--danger);font-weight:700}
+    .flex-col{display:flex;flex-direction:column}
+    @media(max-width:900px){.wrap{grid-template-columns:1fr;}.footer-actions{justify-content:center}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Medicine Claim — Offline Admin</h1>
+        <small class="muted">Add clients, attach multiple medicines, publish, mark claimed, export & print — works 100% offline.</small>
+      </div>
+      <div class="muted">Local-only • Saved in browser</div>
+    </header>
+
+    <!-- Left: Add & Drafts -->
+    <div class="card">
+      <h3>Add Client & Medicines</h3>
+      <label>Client name
+        <input id="clientName" type="text" placeholder="e.g. Maria Santos" />
+      </label>
+
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <div style="flex:1">
+          <label>Medicine name
+            <input id="medName" type="text" placeholder="e.g. Paracetamol" />
+          </label>
+        </div>
+        <div style="width:110px">
+          <label>Qty
+            <input id="medQty" type="number" min="1" value="1" />
+          </label>
+        </div>
+        <div style="align-self:flex-end">
+          <button id="addMedBtn" class="small-btn">Add Med</button>
+        </div>
+      </div>
+
+      <div id="draftMedsContainer" class="med-list"></div>
+
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="saveClientBtn">Save Client (to Drafts)</button>
+        <button id="clearDraftBtn" class="ghost">Clear Draft</button>
+      </div>
+
+      <hr style="margin:12px 0" />
+
+      <h4>Drafted Clients</h4>
+      <div id="draftClients" style="max-height:260px;overflow:auto;margin-top:8px"></div>
+
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="publishBtn">Publish All Drafts</button>
+        <button id="exportAllBtn" class="ghost">Export Published</button>
+      </div>
+    </div>
+
+    <!-- Right: Published -->
+    <div class="card">
+      <h3>Published Area</h3>
+      <div class="muted">Published clients ready for delivery/claim</div>
+
+      <div class="published-list" id="publishedList"></div>
+
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <button id="downloadCsvBtn">Download CSV (Excel)</button>
+        <button id="downloadDocBtn" class="ghost">Download Word (.doc)</button>
+        <button id="printBtn" class="ghost">Print Report</button>
+      </div>
+
+      <hr style="margin:10px 0" />
+      <div class="muted">Tip: Files saved/opened on your PC can be printed from Word/Excel. This app stores data locally in your browser.</div>
+    </div>
+
+    <div class="footer-actions">
+      <div class="muted">Last saved: <span id="lastSaved">never</span></div>
+    </div>
+  </div>
+
+<script>
+/*
+  Offline Medicine Claim App
+  - Save this file as index.html and open in browser.
+  - All data is stored in localStorage under key 'mc_app_data'.
+*/
+
+// Data structure
+// { drafts: [client], published: [client], updatedAt: timestamp }
+// client: { id, clientName, medicines: [{name, qty}], claimed: boolean, claimedMonth: number|null, lastClaimedISO: string|null }
+
+const STORAGE_KEY = 'mc_app_data_v1';
+
+let state = {
+  drafts: [],
+  draftMedicines: [],
+  published: [],
+  updatedAt: null
+};
+
+const clientNameEl = document.getElementById('clientName');
+const medNameEl = document.getElementById('medName');
+const medQtyEl = document.getElementById('medQty');
+const addMedBtn = document.getElementById('addMedBtn');
+const draftMedsContainer = document.getElementById('draftMedsContainer');
+const saveClientBtn = document.getElementById('saveClientBtn');
+const draftClientsEl = document.getElementById('draftClients');
+const publishBtn = document.getElementById('publishBtn');
+const publishedListEl = document.getElementById('publishedList');
+const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+const downloadDocBtn = document.getElementById('downloadDocBtn');
+const printBtn = document.getElementById('printBtn');
+const lastSavedEl = document.getElementById('lastSaved');
+const clearDraftBtn = document.getElementById('clearDraftBtn');
+const exportAllBtn = document.getElementById('exportAllBtn');
+
+function saveState(){
+  state.updatedAt = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    drafts: state.drafts,
+    draftMedicines: state.draftMedicines,
+    published: state.published,
+    updatedAt: state.updatedAt
+  }));
+  lastSavedEl.textContent = new Date(state.updatedAt).toLocaleString();
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      const parsed = JSON.parse(raw);
+      state.drafts = parsed.drafts || [];
+      state.draftMedicines = parsed.draftMedicines || [];
+      state.published = parsed.published || [];
+      state.updatedAt = parsed.updatedAt || null;
+      if(state.updatedAt) lastSavedEl.textContent = new Date(state.updatedAt).toLocaleString();
+    }catch(e){ console.warn('corrupt state', e); }
+  }
+}
+loadState();
+renderAll();
+
+// UI Actions
+addMedBtn.addEventListener('click', () => {
+  const name = medNameEl.value.trim();
+  const qty = parseInt(medQtyEl.value, 10) || 0;
+  if(!name || qty <= 0){ alert('Enter medicine name and quantity > 0'); return; }
+  state.draftMedicines.push({ name, qty });
+  medNameEl.value = '';
+  medQtyEl.value = '1';
+  renderDraftMeds();
+  saveState();
+});
+
+function renderDraftMeds(){
+  if(state.draftMedicines.length === 0){
+    draftMedsContainer.innerHTML = '<div class="muted">No medicines added for current client yet.</div>';
+    return;
+  }
+  draftMedsContainer.innerHTML = '<strong>Current medicines</strong><ul>' +
+    state.draftMedicines.map((m, i) => `<li>${escapeHtml(m.name)} — ${m.qty} <button data-i="${i}" class="small-btn" style="margin-left:8px">Remove</button></li>`).join('') +
+    '</ul>';
+  // attach remove listeners
+  draftMedsContainer.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const i = parseInt(btn.getAttribute('data-i'),10);
+      state.draftMedicines.splice(i,1);
+      renderDraftMeds(); saveState();
+    });
+  });
+}
+
+saveClientBtn.addEventListener('click', () => {
+  const clientName = clientNameEl.value.trim();
+  if(!clientName){ alert('Please enter client name'); return; }
+  if(state.draftMedicines.length === 0){ alert('Add at least one medicine for this client'); return; }
+  const client = {
+    id: 'c_' + Date.now(),
+    clientName,
+    medicines: state.draftMedicines.map(m => ({ name: m.name, qty: m.qty })),
+    claimed: false,
+    claimedMonth: null,
+    lastClaimedISO: null
+  };
+  state.drafts.push(client);
+  clientNameEl.value = '';
+  state.draftMedicines = [];
+  renderAll();
+  saveState();
+});
+
+clearDraftBtn.addEventListener('click', ()=> {
+  if(confirm('Clear current draft medicines?')) {
+    state.draftMedicines = [];
+    renderDraftMeds();
+    saveState();
+  }
+});
+
+function renderDraftClients(){
+  if(state.drafts.length === 0){
+    draftClientsEl.innerHTML = '<div class="muted">No drafted clients yet.</div>'; return;
+  }
+  draftClientsEl.innerHTML = state.drafts.map(d => `
+    <div class="client-row">
+      <div class="client-info">
+        <p>${escapeHtml(d.clientName)}</p>
+        <ul>${d.medicines.map(m=>`<li>${escapeHtml(m.name)} — ${m.qty}</li>`).join('')}</ul>
+      </div>
+      <div class="controls">
+        <button data-id="${d.id}" class="small-btn" onclick="removeDraft('${d.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.removeDraft = function(id){
+  if(!confirm('Delete this drafted client?')) return;
+  state.drafts = state.drafts.filter(d=>d.id!==id);
+  renderAll(); saveState();
+};
+
+publishBtn.addEventListener('click', () => {
+  if(state.drafts.length === 0){ alert('No drafts to publish'); return; }
+  // merge into published. If same clientName exists already, we append as separate record (admin can edit later).
+  state.published = state.published.concat(state.drafts);
+  state.drafts = [];
+  renderAll();
+  saveState();
+  alert('Published ' + state.published.length + ' client(s) total.');
+});
+
+exportAllBtn.addEventListener('click', ()=> {
+  if(state.published.length === 0) { alert('No published clients to export'); return; }
+  downloadCSV();
+});
+
+// Published list rendering & interactions
+
+function renderPublished(){
+  if(state.published.length === 0){
+    publishedListEl.innerHTML = '<div class="muted">No published clients yet. Publish drafts to show here.</div>'; return;
+  }
+  publishedListEl.innerHTML = state.published.map(p => {
+    const claimedBadge = p.claimed ? `<span class="badge">Claimed ${p.lastClaimedISO? new Date(p.lastClaimedISO).toLocaleDateString() : ''}</span>` : `<span class="badge">Not claimed</span>`;
+    let warn = '';
+    // show warning if claimed and claimed in same month
+    if(p.claimed && p.claimedMonth === (new Date().getMonth())) {
+      warn = `<div style="margin-top:6px" class="danger">⚠️ Already claimed this month</div>`;
+    }
+    return `
+      <div class="client-row">
+        <div class="client-info">
+          <p>${escapeHtml(p.clientName)} ${claimedBadge}</p>
+          <ul>${p.medicines.map(m=>`<li>${escapeHtml(m.name)} — ${m.qty}</li>`).join('')}</ul>
+          ${warn}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <label style="font-size:13px"><input type="checkbox" data-id="${p.id}" ${p.claimed? 'checked':''}> Claimed</label>
+          <div style="display:flex;gap:6px">
+            <button class="small-btn" onclick="editPublished('${p.id}')">Edit</button>
+            <button class="small-btn" onclick="deletePublished('${p.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  // attach claim listeners
+  publishedListEl.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change', (e)=>{
+      const id = cb.getAttribute('data-id');
+      handleClaimToggle(id, cb.checked);
+    });
+  });
+}
+
+function handleClaimToggle(id, checked){
+  const idx = state.published.findIndex(p=>p.id===id);
+  if(idx === -1) return;
+  const client = state.published[idx];
+  const currentMonth = new Date().getMonth();
+
+  if(checked){
+    // trying to mark claimed
+    if(client.claimed && client.claimedMonth === currentMonth){
+      // already claimed this month -> warn and revert
+      alert(`${client.clientName} already claimed medicines this month!`);
+      // re-render to undo checkbox change
+      renderPublished();
+      return;
+    }
+    client.claimed = true;
+    client.claimedMonth = currentMonth;
+    client.lastClaimedISO = new Date().toISOString();
+  } else {
+    // unchecking - allow, but reset month & lastClaimed
+    if(confirm('Mark as NOT claimed? This will remove the monthly claim record.')) {
+      client.claimed = false;
+      client.claimedMonth = null;
+      client.lastClaimedISO = null;
+    } else {
+      // revert
+      renderPublished();
+      return;
+    }
+  }
+  state.published[idx] = client;
+  renderAll(); saveState();
+}
+
+// Edit & Delete published
+window.editPublished = function(id){
+  const idx = state.published.findIndex(p=>p.id===id);
+  if(idx===-1) return alert('Record not found');
+  const p = state.published[idx];
+  const newName = prompt('Edit client name', p.clientName);
+  if(newName === null) return;
+  p.clientName = newName.trim() || p.clientName;
+
+  // edit medicines (simple approach: ask a single multiline text where each line = name,qty)
+  const medText = p.medicines.map(m=>`${m.name},${m.qty}`).join('\\n');
+  const newMedText = prompt('Edit medicines (one per line as name,qty). Example:\\nParacetamol,10', medText);
+  if(newMedText === null) { state.published[idx] = p; renderAll(); saveState(); return; }
+  const lines = newMedText.split('\\n').map(l => l.trim()).filter(Boolean);
+  const meds = [];
+  for(const ln of lines){
+    const parts = ln.split(',').map(s=>s.trim());
+    if(parts.length === 0) continue;
+    const name = parts[0];
+    const qty = parseInt(parts[1],10) || 1;
+    meds.push({ name, qty });
+  }
+  if(meds.length === 0){ alert('No valid medicines entered; keeping previous medicines'); }
+  else p.medicines = meds;
+  state.published[idx] = p;
+  renderAll(); saveState();
+};
+
+window.deletePublished = function(id){
+  if(!confirm('Delete this published record?')) return;
+  state.published = state.published.filter(p=>p.id!==id);
+  renderAll(); saveState();
+};
+
+// Export functions
+
+function downloadCSV(){
+  // Flatten: one row per (client, medicine) or group meds in one cell
+  if(state.published.length === 0) { alert('No published data'); return; }
+  const lines = [];
+  lines.push(['Client Name','Medicine','Quantity','Claimed','Last Claimed Date']);
+  state.published.forEach(p => {
+    p.medicines.forEach(m => {
+      lines.push([
+        p.clientName,
+        m.name,
+        m.qty,
+        p.claimed ? 'Yes' : 'No',
+        p.lastClaimedISO ? new Date(p.lastClaimedISO).toLocaleString() : ''
+      ]);
+    });
+  });
+  const csv = lines.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'medicine_published.csv'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 5000);
+}
+
+downloadCsvBtn.addEventListener('click', downloadCSV);
+
+downloadDocBtn.addEventListener('click', () => {
+  if(state.published.length === 0) { alert('No published data'); return; }
+  // Build a simple HTML table and save as .doc (Word can open HTML in .doc)
+  const html = buildReportHtml({title: 'Medicine Published Report', forDoc:true});
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'medicine_published.doc';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },5000);
+});
+
+printBtn.addEventListener('click', () => {
+  if(state.published.length === 0){ if(!confirm('Published list is empty. Print a blank report?')) return; }
+  const html = buildReportHtml({title:'Medicine Published Report', forPrint:true});
+  const w = window.open('', '_blank');
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  // wait a bit then call print (let user cancel)
+  setTimeout(()=> w.print(), 400);
+});
+
+function buildReportHtml(opts = {}){
+  const title = opts.title || 'Report';
+  const now = new Date().toLocaleString();
+  const rows = state.published.map(p => `
+    <tr>
+      <td style="padding:8px;border:1px solid #ddd">${escapeHtml(p.clientName)}</td>
+      <td style="padding:8px;border:1px solid #ddd">${p.medicines.map(m=>escapeHtml(m.name)+' ('+m.qty+')').join('<br>')}</td>
+      <td style="padding:8px;border:1px solid #ddd">${p.claimed ? 'Yes' : 'No'}</td>
+      <td style="padding:8px;border:1px solid #ddd">${p.lastClaimedISO ? new Date(p.lastClaimedISO).toLocaleString() : ''}</td>
+    </tr>
+  `).join('');
+  const html = `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${title}</title>
+        <style>
+          body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+          h1{margin:0 0 6px 0}
+          table{border-collapse:collapse; width:100%; margin-top:12px}
+          th{background:#f3f4f6;padding:8px;border:1px solid #ddd;text-align:left}
+          td{vertical-align:top}
+          .meta{color:#6b7280;font-size:13px}
+        </style>
+      </head>
+      <body>
+        <h1>${title}</h1>
+        <div class="meta">Generated: ${now}</div>
+        <table>
+          <thead><tr>
+            <th>Client</th><th>Medicines (qty)</th><th>Claimed</th><th>Last Claimed</th>
+          </tr></thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+  return html;
+}
+
+// Utility
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderAll(){
+  renderDraftMeds();
+  renderDraftClients();
+  renderPublished();
+}
+
+// Edit helpers
+window.editDraftMed = function(clientId){
+  // not used in current UI
+};
+
+// load initial UI
+renderAll();
+
+// On first load, show short how-to if empty
+if(state.published.length===0 && state.drafts.length===0 && !state.updatedAt){
+  setTimeout(()=> {
+    if(confirm('It looks like this is a new local app file. Would you like a quick tour?')) {
+      alert('1) Add a client name, add medicines, Save Client to Drafts.\\n2) Publish draft(s) using Publish All.\\n3) In Published area, check "Claimed" when the client receives medicines.\\n4) Use Download CSV to open in Excel, or Download Word to open/print in Word.');
+    }
+  }, 400);
+}
+
+// Autosave on beforeunload
+window.addEventListener('beforeunload', () => {
+  saveState();
+});
+
+// Initialize lastSaved if null
+if(!state.updatedAt) lastSavedEl.textContent = 'never';
+
+</script>
+</body>
+</html>

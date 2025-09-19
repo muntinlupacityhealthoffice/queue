@@ -1,8 +1,4 @@
-I will create the HTML for the Bayanan Main clinic appointments dashboard. The key change is updating the Firebase database path to `appointments/bayananmain` to ensure it's managing the correct appointment data for this specific clinic.
 
-Here is the refactored code for the Bayanan Main clinic:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -332,7 +328,7 @@ Here is the refactored code for the Bayanan Main clinic:
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 
             // Listen for changes in the "appointments/bayananmain" path
-            const appointmentsRef = ref(database, 'appointments/bayananmain');
+            const appointmentsRef = ref(database, 'appointments/bayanan_main');
             onValue(appointmentsRef, (snapshot) => {
                 const data = snapshot.val();
                 allAppointments = data ? Object.entries(data) : [];

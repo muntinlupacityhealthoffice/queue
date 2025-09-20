@@ -327,7 +327,7 @@
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 
             // Listen for changes in the "appointments/city health office" path
-            const appointmentsRef = ref(database, 'appointments/city health office');
+            const appointmentsRef = ref(database, 'appointments/city_health_office');
             onValue(appointmentsRef, (snapshot) => {
                 const data = snapshot.val();
                 allAppointments = data ? Object.entries(data) : [];

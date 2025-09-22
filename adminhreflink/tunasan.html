@@ -55,6 +55,78 @@
             cursor: pointer;
             filter: invert(0.5);
         }
+        .edit-info-btn {
+            background-color: #1c7ed6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 150ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .edit-info-btn:hover {
+            background-color: #1971c2;
+        }
+        .calendar-cell {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            position: relative;
+        }
+        .calendar-cell:hover {
+            background-color: #f7fafc;
+        }
+        .calendar-cell.has-appointments {
+            background-color: #dbeafe;
+            font-weight: bold;
+        }
+        .calendar-cell.has-appointments:hover {
+            background-color: #bfdbfe;
+        }
+        .calendar-cell.current-day {
+            background-color: #fde68a;
+        }
+        .calendar-count {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            header, footer, .controls, .print-btn, .edit-info-btn, .delete-row-btn, .deletion-column {
+                display: none !important;
+            }
+            .table-container {
+                overflow-x: visible;
+                box-shadow: none;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -74,9 +146,17 @@
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
+    <!-- Approved Patient Count Div -->
+    <div class="w-full bg-white shadow-md rounded-md p-4 mt-6 text-center font-bold text-lg text-gray-800">
+        Approved Clients this Month: <span id="totalPatientCount">0</span>
+    </div>
+
     <main class="container mx-auto p-4 md:p-8 flex-grow">
-        <!-- Search and Filter Section -->
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-2 mb-6">
+        <!-- Patient Count and Search/Filter Section -->
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-2 mb-6 controls">
+            <div class="flex items-center space-x-2">
+                <!-- Count moved into a dedicated section -->
+            </div>
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-1/2">
                 <div class="relative w-full">
                     <input id="searchInput" type="text" placeholder="Search by name or service..." class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
@@ -96,6 +176,31 @@
             <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto ml-auto items-center">
                 <button id="toggleDeletionBtn" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">Manage Deletions</button>
                 <button id="deleteSelectedBtn" class="delete-btn px-6 py-2 rounded-full font-semibold opacity-50 cursor-not-allowed transition hidden" disabled>Delete Selected</button>
+            </div>
+        </div>
+
+        <!-- Calendar View Section -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <button id="prevMonthBtn" class="px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                </button>
+                <h2 id="currentMonthYear" class="text-xl font-bold"></h2>
+                <button id="nextMonthBtn" class="px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 text-center text-sm">
+                <div class="py-2 font-semibold text-gray-500">Sun</div>
+                <div class="py-2 font-semibold text-gray-500">Mon</div>
+                <div class="py-2 font-semibold text-gray-500">Tue</div>
+                <div class="py-2 font-semibold text-gray-500">Wed</div>
+                <div class="py-2 font-semibold text-gray-500">Thu</div>
+                <div class="py-2 font-semibold text-gray-500">Fri</div>
+                <div class="py-2 font-semibold text-gray-500">Sat</div>
+            </div>
+            <div class="mt-4 text-center print-btn">
+                <button id="printBtn" class="bg-gray-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Print / Download Appointments</button>
             </div>
         </div>
 
@@ -124,6 +229,7 @@
                         <th class="px-5 py-3 border-b-2 border-gray-200">Specific Details</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Status</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Action</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Edit Info</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center deletion-column">
                             Trash
                         </th>
@@ -142,6 +248,39 @@
             MUNTINLUPA CITY HEALTH OFFICE
         </div>
     </footer>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Patient Information</h3>
+                <div class="mt-2 px-7 py-3">
+                    <form id="editForm">
+                        <input type="hidden" id="editKey">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Last Name</label>
+                        <input type="text" id="editLastName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">First Name</label>
+                        <input type="text" id="editFirstName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Middle Name</label>
+                        <input type="text" id="editMiddleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Service</label>
+                        <input type="text" id="editService" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Phone</label>
+                        <input type="text" id="editPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </form>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Save
+                    </button>
+                    <button id="closeEditModalBtn" class="mt-2 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -171,6 +310,113 @@
         let confirmTimeout = null;
         let confirmingButton = null;
 
+        // Calendar variables
+        let currentYear, currentMonth;
+        const today = new Date();
+
+        // Function to update the patient counts
+        function updateCounts(data, year, month) {
+            const totalPatientCountEl = document.getElementById('totalPatientCount');
+            
+            if (!data) {
+                totalPatientCountEl.textContent = '0';
+                updateCalendar({});
+                return;
+            }
+
+            const appointmentsArray = Object.values(data);
+            
+            // Filter appointments for the current calendar month that are also 'Approved'
+            const approvedAppointmentsInMonth = appointmentsArray.filter(appointment => {
+                const appointmentDate = new Date(appointment.preferredDate);
+                // Extract month and year from appointment date
+                const apptYear = appointmentDate.getFullYear();
+                const apptMonth = appointmentDate.getMonth();
+                
+                // Compare with current calendar month and year
+                return apptYear === year && apptMonth === month && appointment.status === 'Approved';
+            });
+
+            const totalCount = approvedAppointmentsInMonth.length;
+            totalPatientCountEl.textContent = totalCount;
+            
+            // This daily count is for the calendar view and should show all appointments, not just approved ones
+            const dailyCounts = {};
+            appointmentsArray.forEach(appointment => {
+                const date = appointment.preferredDate;
+                if (dailyCounts[date]) {
+                    dailyCounts[date]++;
+                } else {
+                    dailyCounts[date] = 1;
+                }
+            });
+
+            // Update the calendar with the new counts
+            updateCalendar(dailyCounts);
+        }
+
+        // Function to render the calendar
+        function generateCalendar(year, month) {
+            const calendarGridEl = document.getElementById('calendarGrid');
+            const currentMonthYearEl = document.getElementById('currentMonthYear');
+            const firstDay = (new Date(year, month)).getDay();
+            const daysInMonth = 32 - new Date(year, month, 32).getDate();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            currentMonthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+            // Clear previous calendar days, but keep day headers
+            const existingDays = calendarGridEl.querySelectorAll('.calendar-day');
+            existingDays.forEach(day => day.remove());
+
+            // Add blank cells for the days before the 1st
+            for (let i = 0; i < firstDay; i++) {
+                const blankCell = document.createElement('div');
+                blankCell.className = "calendar-cell";
+                calendarGridEl.appendChild(blankCell);
+            }
+
+            // Add the numbered day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                dayCell.className = `calendar-cell calendar-day p-2`;
+                dayCell.innerHTML = `<span>${day}</span>`;
+                dayCell.setAttribute('data-date', formattedDate);
+                
+                // Add today's date highlight
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayCell.classList.add('current-day');
+                }
+
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+        
+        // Function to update the calendar with appointment counts
+        function updateCalendar(dailyCounts) {
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach(dayCell => {
+                const date = dayCell.getAttribute('data-date');
+                const count = dailyCounts[date] || 0;
+                
+                // Remove previous count elements
+                const existingCount = dayCell.querySelector('.calendar-count');
+                if (existingCount) existingCount.remove();
+                
+                // Add new count if greater than 0
+                if (count > 0) {
+                    dayCell.classList.add('has-appointments');
+                    const countEl = document.createElement('div');
+                    countEl.className = 'calendar-count';
+                    countEl.textContent = count;
+                    dayCell.appendChild(countEl);
+                } else {
+                    dayCell.classList.remove('has-appointments');
+                }
+            });
+        }
+
         // Function to render the table
         function renderTable(data, duplicateKeys = []) {
             const appointmentsTableBody = document.getElementById('appointmentsTableBody');
@@ -178,7 +424,7 @@
             
             if (!data || Object.keys(data).length === 0) {
                 const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `<td colspan="12" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
+                noDataRow.innerHTML = `<td colspan="14" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
                 appointmentsTableBody.appendChild(noDataRow);
                 return;
             }
@@ -242,6 +488,9 @@
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.specificDetails || 'N/A'}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white ${statusColor}">${status}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-right whitespace-nowrap">${actionButtons}</td>
+                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-center">
+                        <button data-key="${key}" class="edit-info-btn">Edit</button>
+                    </td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column">
                         <button data-key="${key}" data-action="delete" class="delete-row-btn bg-transparent border-none text-gray-500 hover:text-red-600 transition duration-150 ease-in-out">🗑️</button>
                     </td>
@@ -331,17 +580,61 @@
             const toggleDeletionBtn = document.getElementById('toggleDeletionBtn');
             const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const editModal = document.getElementById('editModal');
+            const closeEditModalBtn = document.getElementById('closeEditModalBtn');
+            const saveEditBtn = document.getElementById('saveEditBtn');
+            const prevMonthBtn = document.getElementById('prevMonthBtn');
+            const nextMonthBtn = document.getElementById('nextMonthBtn');
+            const calendarGrid = document.getElementById('calendarGrid');
+            const printBtn = document.getElementById('printBtn');
+            
+            // Initialize calendar
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            generateCalendar(currentYear, currentMonth);
 
             // Listen for changes in the "appointments/tunasan" path
             const appointmentsRef = ref(database, 'appointments/tunasan');
             onValue(appointmentsRef, (snapshot) => {
                 const data = snapshot.val();
                 allAppointments = data ? Object.entries(data) : [];
+                updateCounts(data, currentYear, currentMonth); // Pass current month and year to updateCounts
                 filterAndRender(); // Render the table with the current filter
             }, (error) => {
                 console.error("Error fetching data:", error);
                 if (appointmentsTableBody) {
-                    appointmentsTableBody.innerHTML = `<tr><td colspan="12" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+                    appointmentsTableBody.innerHTML = `<tr><td colspan="14" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+                }
+            });
+
+            // Event listeners for calendar navigation
+            prevMonthBtn.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                generateCalendar(currentYear, currentMonth);
+                updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+            });
+
+            nextMonthBtn.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                generateCalendar(currentYear, currentMonth);
+                updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+            });
+
+            // Event listener for clicking on a calendar date
+            calendarGrid.addEventListener('click', (e) => {
+                const dayCell = e.target.closest('.calendar-day');
+                if (dayCell) {
+                    const selectedDate = dayCell.getAttribute('data-date');
+                    dateInput.value = selectedDate;
+                    filterAndRender();
                 }
             });
 
@@ -502,7 +795,6 @@
                                 button.textContent = '🗑️';
                             } else {
                                 button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
-                                button.classList.remove('bg-yellow-500');
                                 button.classList.add(action === 'approve' ? 'bg-green-500' : 'bg-red-500');
                             }
                         } else {
@@ -526,8 +818,138 @@
                             }, 3000); // 3-second timeout
                         }
                     }
+
+                    if (button.classList.contains('edit-info-btn')) {
+                        const key = button.getAttribute('data-key');
+                        const appointment = allAppointments.find(([k]) => k === key)[1];
+                        document.getElementById('editKey').value = key;
+                        document.getElementById('editLastName').value = appointment.lastName;
+                        document.getElementById('editFirstName').value = appointment.firstName;
+                        document.getElementById('editMiddleName').value = appointment.middleName;
+                        document.getElementById('editService').value = appointment.services;
+                        document.getElementById('editPhone').value = appointment.phone;
+                        editModal.classList.remove('hidden');
+                    }
                 });
             }
+
+            closeEditModalBtn.addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+
+            saveEditBtn.addEventListener('click', () => {
+                const key = document.getElementById('editKey').value;
+                const updatedData = {
+                    lastName: document.getElementById('editLastName').value,
+                    firstName: document.getElementById('editFirstName').value,
+                    middleName: document.getElementById('editMiddleName').value,
+                    services: document.getElementById('editService').value,
+                    phone: document.getElementById('editPhone').value,
+                };
+                const appointmentRef = ref(database, `appointments/tunasan/${key}`);
+                update(appointmentRef, updatedData).then(() => {
+                    editModal.classList.add('hidden');
+                }).catch(error => {
+                    console.error("Error updating document:", error);
+                });
+            });
+
+            // Print button functionality
+            printBtn.addEventListener('click', () => {
+                const approvedAppointments = allAppointments.filter(([key, appointment]) => appointment.status === 'Approved');
+                let approvedTableContent = '';
+                
+                if (approvedAppointments.length === 0) {
+                    approvedTableContent = `<tr><td colspan="11" class="px-5 py-5 text-center text-gray-500">No approved appointments for this month.</td></tr>`;
+                } else {
+                    approvedAppointments.forEach(([key, appointment], index) => {
+                        approvedTableContent += `
+                            <tr>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${index + 1}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredDate}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredTime}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.lastName || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.firstName || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.middleName || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.services || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.phone || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.specificDetails || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-green-600 font-semibold">Approved</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                const currentMonthYear = document.getElementById('currentMonthYear').textContent;
+                const printWindow = window.open('', '', 'height=600,width=800');
+                
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Appointments for ${currentMonthYear}</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+                        <style>
+                            body {
+                                font-family: 'Inter', sans-serif;
+                                margin: 20px;
+                            }
+                            h1 {
+                                text-align: center;
+                                font-size: 24px;
+                                font-weight: bold;
+                                margin-bottom: 20px;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                            }
+                            th, td {
+                                border: 1px solid #ccc;
+                                padding: 8px;
+                                text-align: left;
+                                font-size: 12px;
+                            }
+                            th {
+                                background-color: #f2f2f2;
+                            }
+                            @media print {
+                                .print-header-logo {
+                                    display: none;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1 class="print-header-title">Tunasan Health Center Approved Appointments for ${currentMonthYear}</h1>
+                        <table>
+                            <thead>
+                                <tr class="bg-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">#</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Date</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Time</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Last Name</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">First Name</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Middle Name</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Service</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Phone</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Email</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Specific Details</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${approvedTableContent}
+                            </tbody>
+                        </table>
+                    </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            });
         });
     </script>
 </body>

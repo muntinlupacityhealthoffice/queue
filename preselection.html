@@ -2,13 +2,26 @@
 <html lang="en" class="min-h-screen bg-gray-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>CITY HEALTH OFFICE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Firebase SDKs -->
+    
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
+    <style>
+      .modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      /* Ensure the background image covers the entire viewport without stretching */
+      .bg-cho {
+          background-image: url('pictures/cho.jpg');
+          background-size: cover;
+          background-position: center;
+      }
+    </style>
 </head>
 <body class="font-sans">
 
@@ -16,7 +29,8 @@
     <header class="bg-yellow-400 border-b-4 border-blue-900">
         <div class="container mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 py-4">
             <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
-                <img src="pictures/CHO LOGO.png" alt="City Health Logo" class="rounded-full w-28 h-28 shadow-lg">
+                <!-- Fallback for the logo image -->
+                <img src="pictures/CHO LOGO.png" class="rounded-full w-28 h-28 shadow-lg">
                 <div>
                     <h1 class="font-semibold text-xl text-blue-900">MUNTINLUPA</h1>
                     <h2 class="font-bold text-4xl text-blue-900">CITY HEALTH OFFICE</h2>
@@ -25,9 +39,9 @@
             <!-- Navigation -->
             <nav class="flex space-x-6 font-bold text-black mt-4 sm:mt-0">
                 <a href="index.html" class="hover:underline">HOME</a>
-                <a href="#" class="hover:underline">ABOUT</a>
-                <a href="#" class="hover:underline">SERVICES</a>
-                <a href="#" class="hover:underline">CONTACT</a>
+                <a href="index.html" class="hover:underline">ABOUT</a>
+                <a href="index.html" class="hover:underline">SERVICES</a>
+                <a href="index.html" class="hover:underline">CONTACT</a>
             </nav>
         </div>
     </header>
@@ -35,7 +49,7 @@
     <!-- Main Section -->
     <main class="relative container mx-auto flex items-center justify-center min-h-[calc(100vh-144px)]">
         <!-- Background Image with Overlay -->
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('pictures/cho.jpg');">
+        <div class="absolute inset-0 bg-cho">
             <div class="absolute inset-0 bg-black opacity-50"></div>
         </div>
 
@@ -72,46 +86,19 @@
         </div>
     </div>
     
-    <!-- Health Staff Modal -->
-    <div id="staffModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-96 text-center relative">
-            <h3 class="text-xl font-bold text-blue-800 mb-4">Health Staff Login</h3>
-            <form action="staff.html" method="POST" class="space-y-4 text-left">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Staff ID</label>
-                    <input type="text" name="staffID" required
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Password</label>
-                    <input type="password" name="staffPassword" required
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                </div>
-                <button type="submit"
-                        class="w-full px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition">
-                    Login
-                </button>
-            </form>
-            <button onclick="document.getElementById('staffModal').classList.add('hidden')"
-                    class="mt-4 px-6 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition">
-                Close
-            </button>
-        </div>
-    </div>
-    
     <!-- Admin Modal -->
     <div id="adminModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-96 text-center relative">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-96 text-center relative modal-content">
             <h3 class="text-xl font-bold text-blue-800 mb-4">Admin Login</h3>
-            <form onsubmit="return checkAdminLogin(event)" class="space-y-4 text-left">
+            <form id="adminLoginForm" onsubmit="return false;" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700">Username</label>
-                    <input type="text" id="adminUser" required
+                    <label class="block text-sm font-semibold text-gray-700">Email</label>
+                    <input type="email" id="adminEmail" required
                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">Password</label>
-                    <input type="password" id="adminPass" required
+                    <input type="password" id="adminPassword" required
                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                 </div>
                 <button type="submit"

@@ -131,6 +131,26 @@
         </div>
     </footer>
 
+    <!-- ✅ Logout Notice -->
+    <div id="logoutNotice" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden">
+        ✅ You have successfully logged out.
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-80 text-center">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Are you sure you want to log out?</h4>
+            <div class="flex justify-center space-x-4">
+                <button id="confirmLogoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">
+                    Yes, Log Out
+                </button>
+                <button id="cancelLogoutBtn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('searchInput');

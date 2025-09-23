@@ -223,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Use the global variables provided by the environment
@@ -238,7 +238,7 @@
             appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
             measurementId: "G-FHE4TNMD0X"
         };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? initialAuthToken : null;
 
         // Set Firebase log level for debugging
         setLogLevel('debug');
@@ -292,10 +292,11 @@
         // Call the authentication function on page load
         authenticateUser();
 
-        function fetchAndRenderApprovedClients() {
-            const approvedClientsRef = collection(db, `artifacts/${appId}/public/data/approved_clients`);
+        async function fetchAndRenderApprovedClients() {
+            try {
+                const approvedClientsRef = collection(db, `artifacts/${appId}/public/data/approved_clients`);
+                const querySnapshot = await getDocs(approvedClientsRef);
 
-            onSnapshot(approvedClientsRef, (querySnapshot) => {
                 approvedClientsContent.innerHTML = '';
                 let totalClients = 0;
 
@@ -317,7 +318,9 @@
                 });
 
                 approvedClientsCountEl.textContent = totalClients;
-            });
+            } catch (error) {
+                console.error("Error fetching approved clients:", error);
+            }
         }
 
         // Function to filter clinics based on search input

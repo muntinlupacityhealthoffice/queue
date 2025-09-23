@@ -106,7 +106,7 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="pictures/CHO LOGO.png" alt="CHO Logo" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="https://placehold.co/80x80/1a237e/ffffff?text=CHO" alt="CHO Logo" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Admin Dashboard--- Appointments</h2>
@@ -223,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Use the global variables provided by the environment
@@ -259,13 +259,6 @@
         const approvedClientsCountEl = document.getElementById('approvedClientsCount');
         const approvedClientsContent = document.getElementById('approvedClientsContent');
         const loginStatus = document.getElementById('loginStatus');
-
-        const clinicsList = [
-            "ALABANG", "AYALA ALABANG", "BAGONG SILANG", "BAYANAN ANNEX", 
-            "BAYANAN MAIN", "BULI", "CITY HEALTH OFFICE", "CUPANG", "LAGUERTA",
-            "LAKEVIEW", "POBLACION", "PUTATAN", "PUTATAN ANNEX", "SITIO STO. NINO",
-            "SOUTHVILLE", "SUCAT", "TUNASAN", "VICTORIA"
-        ];
         
         let userId = null;
 
@@ -289,7 +282,7 @@
                 console.log("User is logged in.");
                 userId = user.uid;
                 loginStatus.textContent = `Signed in as Admin`;
-                renderApprovedClients(clinicsList);
+                fetchAndRenderApprovedClients();
             } else {
                 console.log("No user found. Redirecting to login page.");
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
@@ -299,19 +292,31 @@
         // Call the authentication function on page load
         authenticateUser();
 
-        function renderApprovedClients(clientsList) {
-            approvedClientsContent.innerHTML = '';
-            approvedClientsCountEl.textContent = clientsList.length;
+        function fetchAndRenderApprovedClients() {
+            const approvedClientsRef = collection(db, `artifacts/${appId}/public/data/approved_clients`);
 
-            clientsList.forEach(clientName => {
-                const clientPanel = document.createElement('div');
-                clientPanel.className = 'panel-clinic flex flex-col transition-colors';
-                clientPanel.innerHTML = `
-                    <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
-                        <span>${clientName}</span>
-                    </div>
-                `;
-                approvedClientsContent.appendChild(clientPanel);
+            onSnapshot(approvedClientsRef, (querySnapshot) => {
+                approvedClientsContent.innerHTML = '';
+                let totalClients = 0;
+
+                querySnapshot.forEach((doc) => {
+                    const clinicName = doc.id;
+                    const data = doc.data();
+                    const count = data.count || 0;
+                    totalClients += count;
+
+                    const clientPanel = document.createElement('div');
+                    clientPanel.className = 'panel-clinic flex flex-col transition-colors';
+                    clientPanel.innerHTML = `
+                        <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
+                            <span>${clinicName.toUpperCase()}</span>
+                            <span class="text-right font-bold text-lg">${count}</span>
+                        </div>
+                    `;
+                    approvedClientsContent.appendChild(clientPanel);
+                });
+
+                approvedClientsCountEl.textContent = totalClients;
             });
         }
 
@@ -360,7 +365,6 @@
         approvedClientsPanel.addEventListener('click', () => {
             approvedClientsContent.classList.toggle('expanded');
         });
-
     </script>
 </body>
 </html>

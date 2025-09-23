@@ -77,54 +77,55 @@
                     <form id="personalInfoForm">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name*</label>
-                                <input type="text" id="lastName" name="lastName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="firstName" class="block text-sm font-medium text-gray-700">First Name*</label>
-                                <input type="text" id="firstName" name="firstName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="middleName" class="block text-sm font-medium text-gray-700">Middle Name</label>
-                                <input type="text" id="middleName" name="middleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label for="age" class="block text-sm font-medium text-gray-700">Age*</label>
-                                <input type="number" id="age" name="age" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <!-- Address Field -->
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="flex flex-col md:col-span-2">
-                        <label for="address" class="block text-sm font-medium text-gray-700">Address*</label>
-                        <input type="text" id="permanent-address" name="permanentAddress" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                               <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name*</label>
+                        <input type="text" id="lastName" name="lastName" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                    </div>
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name*</label>
+                        <input type="text" id="firstName" name="firstName" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                    </div>
+                    <div>
+                        <label for="middleName" class="block text-sm font-medium text-gray-700 mb-2">Middle Name*</label>
+                        <input type="text" id="middleName" name="middleName" class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
                     </div>
                 </div>
-                            <div>
-                                <label for="sex" class="block text-sm font-medium text-gray-700">Sex*</label>
-                                <select id="sex" name="sex" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
-                                <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number*</label>
-                                <input type="tel" id="phone" name="phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </div>
-                            <div>
-                                <label for="services" class="block text-sm font-medium text-gray-700">Services*</label>
-                                <select id="services" name="services" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="age" class="block text-sm font-medium text-gray-700 mb-2">Age*</label>
+                        <input type="number" id="age" name="age" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                    </div>
+                    <div>
+                        <label for="sex" class="block text-sm font-medium text-gray-700 mb-2">Sex*</label>
+                        <select id="sex" name="sex" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                            <option value="">--SELECT--</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address*</label>
+                    <input type="text" id="address" name="address" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email*</label>
+                        <input type="email" id="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                    </div>
+                    <div>
+                        <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number*</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                    </div>
+                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="services" class="block text-sm font-medium text-gray-700 mb-2">Services*</label>
+                        <select id="services" name="services" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                                    <option value="">SELECT</option>
                                     <option value="death_cert/transfer_exhumation">Issuance and release of Death certificates, Transfer certificates or Authorization of exhumation remains</option>
                                     <option value="water_laboratory">Water Laboratory</option>
                                     <option value="checkup">General Consultation</option>
@@ -140,9 +141,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="healthCenter" class="block text-sm font-medium text-gray-700">Health Center*</label>
-                                <select id="healthCenter" name="healthCenter" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <option value="">--SELECT--</option>
+                                <label for="healthCenter" class="block text-sm font-medium text-gray-700 mb-2">Health Center*</label>
+                        <select id="healthCenter" name="healthCenter" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
+                                    <option value="">SELECT</option>
                                 </select>
                             </div>
                         </div>

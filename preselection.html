@@ -6,7 +6,6 @@
     <title>CITY HEALTH OFFICE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase SDKs - Using the modular version -->
     <script type="module">
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
       import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -52,6 +51,14 @@
                   }
               });
       });
+      
+      // Check for logout success URL parameter
+      document.addEventListener('DOMContentLoaded', () => {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('logout') === 'success') {
+              showMessage("You have been successfully logged out.");
+          }
+      });
     </script>
 
     <style>
@@ -69,17 +76,15 @@
 </head>
 <body class="font-sans">
 
-    <!-- Header -->
     <header class="bg-yellow-400 border-b-4 border-blue-900">
         <div class="container mx-auto flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 py-4">
             <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-center sm:text-left">
                 <img src="pictures/CHO LOGO.png" class="rounded-full w-28 h-28 shadow-lg">
                 <div>
-                    <h1 class="font-semibold text-xl text-yellow-500">MUNTINLUPA</h1>
+                    <h1 class="font-semibold text-xl text-blue-900">MUNTINLUPA</h1>
                     <h2 class="font-bold text-4xl text-blue-900">CITY HEALTH OFFICE</h2>
                 </div>
             </div>
-            <!-- Navigation -->
             <nav class="flex space-x-6 font-bold text-black mt-4 sm:mt-0">
                 <a href="index.html" class="hover:underline">HOME</a>
                 <a href="#" class="hover:underline">ABOUT</a>
@@ -89,24 +94,19 @@
         </div>
     </header>
 
-    <!-- Main Section -->
     <main class="relative container mx-auto flex items-center justify-center min-h-[calc(100vh-144px)]">
-        <!-- Background Image with Overlay -->
         <div class="absolute inset-0 bg-cho">
             <div class="absolute inset-0 bg-black opacity-50"></div>
         </div>
 
-        <!-- Role Selection Container -->
         <div class="relative z-10 flex flex-col items-center py-12 space-y-6 bg-white bg-opacity-50 p-8 rounded-lg shadow-xl">
             <h2 class="text-3xl font-bold text-blue-900">Select Your Role</h2>
             
-            <!-- Client Button -->
             <button onclick="document.getElementById('clientModal').classList.remove('hidden')"
                     class="w-56 py-3 border-2 border-blue-600 rounded-full text-blue-700 font-bold hover:bg-blue-600 hover:text-white transition">
                 CLIENT
             </button>
             
-            <!-- Admin Button -->
             <button onclick="document.getElementById('adminModal').classList.remove('hidden')"
                     class="w-56 py-3 border-2 border-blue-600 rounded-full text-blue-700 font-bold hover:bg-blue-600 hover:text-white transition">
                 ADMIN
@@ -114,7 +114,6 @@
         </div>
     </main>
 
-    <!-- Client Modal -->
     <div id="clientModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white p-8 rounded-xl shadow-lg w-80 text-center relative">
             <h3 class="text-xl font-bold text-blue-800 mb-4">Client</h3>
@@ -129,7 +128,6 @@
         </div>
     </div>
     
-    <!-- Admin Modal -->
     <div id="adminModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white p-8 rounded-xl shadow-lg w-96 text-center relative modal-content">
             <h3 class="text-xl font-bold text-blue-800 mb-4">Admin Login</h3>
@@ -156,7 +154,6 @@
         </div>
     </div>
 
-    <!-- Message Box -->
     <div id="messageBox" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg text-center">
             <p id="messageText" class="text-lg font-semibold text-gray-800 mb-4"></p>
@@ -168,3 +165,4 @@
     </div>
 </body>
 </html>
+```eof

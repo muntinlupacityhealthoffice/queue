@@ -106,6 +106,12 @@
             font-weight: bold;
         }
 
+        .service-name {
+            cursor: pointer;
+            color: #1c7ed6;
+            text-decoration: underline;
+        }
+
         /* Print-specific styles */
         @media print {
             body {
@@ -172,6 +178,7 @@
                 <button id="filterAllBtn" class="filter-btn bg-blue-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-600 transition w-full md:w-auto active">All</button>
                 <button id="filterApprovedBtn" class="filter-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition w-full md:w-auto">Approved</button>
                 <button id="filterDeclinedBtn" class="filter-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition w-full md:w-auto">Declined</button>
+                <button id="viewServiceTotalsBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-600 transition w-full md:w-auto">View Service Totals</button>
             </div>
             <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto ml-auto items-center">
                 <button id="toggleDeletionBtn" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">Manage Deletions</button>
@@ -237,7 +244,7 @@
                 </thead>
                 <tbody id="appointmentsTableBody" class="text-sm">
                     <!-- Data will be dynamically inserted here by JavaScript -->
-                    <tr><td colspan="12" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
+                    <tr><td colspan="14" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -275,6 +282,23 @@
                     </button>
                     <button id="closeEditModalBtn" class="mt-2 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Service Count Modal -->
+    <div id="serviceCountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 id="serviceCountTitle" class="text-lg leading-6 font-medium text-gray-900">Total Approved Clients per Service</h3>
+                <div id="serviceListContainer" class="mt-4 text-left px-7 py-3 max-h-80 overflow-y-auto">
+                    <!-- Service list will be injected here dynamically -->
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeServiceCountModalBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Close
                     </button>
                 </div>
             </div>
@@ -472,6 +496,7 @@
                 const firstName = appointment.firstName || 'N/A';
                 const lastName = appointment.lastName || 'N/A';
                 const middleName = appointment.middleName || 'N/A';
+                const services = appointment.services || 'N/A';
 
                 row.innerHTML = `
                     <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column">
@@ -482,7 +507,7 @@
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${lastName}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${firstName}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${middleName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.services}</td>
+                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${services}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${contactCell}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.specificDetails || 'N/A'}</td>
@@ -587,6 +612,11 @@
             const nextMonthBtn = document.getElementById('nextMonthBtn');
             const calendarGrid = document.getElementById('calendarGrid');
             const printBtn = document.getElementById('printBtn');
+            const viewServiceTotalsBtn = document.getElementById('viewServiceTotalsBtn');
+            const serviceCountModal = document.getElementById('serviceCountModal');
+            const closeServiceCountModalBtn = document.getElementById('closeServiceCountModalBtn');
+            const serviceListContainer = document.getElementById('serviceListContainer');
+
             
             // Initialize calendar
             currentYear = today.getFullYear();
@@ -836,6 +866,10 @@
             closeEditModalBtn.addEventListener('click', () => {
                 editModal.classList.add('hidden');
             });
+            
+            closeServiceCountModalBtn.addEventListener('click', () => {
+                serviceCountModal.classList.add('hidden');
+            });
 
             saveEditBtn.addEventListener('click', () => {
                 const key = document.getElementById('editKey').value;
@@ -854,9 +888,43 @@
                 });
             });
 
+            viewServiceTotalsBtn.addEventListener('click', () => {
+                const serviceCounts = {};
+                allAppointments.forEach(([key, appointment]) => {
+                    if (appointment.status === 'Approved' && appointment.services) {
+                        const serviceName = appointment.services;
+                        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+                    }
+                });
+
+                let serviceListHtml = '';
+                if (Object.keys(serviceCounts).length > 0) {
+                    for (const [service, count] of Object.entries(serviceCounts)) {
+                        serviceListHtml += `
+                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                <span class="text-sm font-medium text-gray-700">${service}</span>
+                                <span class="text-sm font-bold text-blue-600">${count}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    serviceListHtml = `<p class="text-center text-gray-500">No approved appointments found for any service.</p>`;
+                }
+                
+                serviceListContainer.innerHTML = serviceListHtml;
+                serviceCountModal.classList.remove('hidden');
+            });
+
+
             // Print button functionality
             printBtn.addEventListener('click', () => {
-                const approvedAppointments = allAppointments.filter(([key, appointment]) => appointment.status === 'Approved');
+                const approvedAppointments = allAppointments.filter(([key, appointment]) => {
+                    const appointmentDate = new Date(appointment.preferredDate);
+                    return appointment.status === 'Approved' && 
+                           appointmentDate.getFullYear() === currentYear && 
+                           appointmentDate.getMonth() === currentMonth;
+                });
+                
                 let approvedTableContent = '';
                 
                 if (approvedAppointments.length === 0) {

@@ -98,7 +98,7 @@
                     <div>
                         <label for="sex" class="block text-sm font-medium text-gray-700 mb-2">Sex*</label>
                         <select id="sex" name="sex" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-900">
-                            <option value="">--SELECT--</option>
+                            <option value="">SELECT</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
@@ -328,7 +328,7 @@
 
             // Function to generate time slots
             const generateTimeSlots = () => {
-                preferredTimeSelect.innerHTML = '<option value="">--SELECT--</option>';
+                preferredTimeSelect.innerHTML = '<option value="">SELECT</option>';
                 const startTime = 8 * 60; // 8:00 AM in minutes
                 const endTime = 17 * 60; // 5:00 PM in minutes
                 const slotDuration = 30; // 30 minutes
@@ -354,7 +354,7 @@
             // Function to filter health centers based on selected service
             const filterHealthCentersByService = () => {
                 const selectedService = servicesSelect.value;
-                healthCenterSelect.innerHTML = '<option value="">--SELECT--</option>';
+                healthCenterSelect.innerHTML = '<option value="">SELECT</option>';
                 
                 if (selectedService) {
                     for (const key in healthCenterData) {

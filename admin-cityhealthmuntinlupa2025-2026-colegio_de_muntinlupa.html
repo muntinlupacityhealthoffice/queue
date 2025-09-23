@@ -223,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Use the global variables provided by the environment
@@ -292,34 +292,37 @@
         // Call the authentication function on page load
         authenticateUser();
 
-        async function fetchAndRenderApprovedClients() {
+        function fetchAndRenderApprovedClients() {
             try {
                 const approvedClientsRef = collection(db, `artifacts/${appId}/public/data/approved_clients`);
-                const querySnapshot = await getDocs(approvedClientsRef);
-
-                approvedClientsContent.innerHTML = '';
-                let totalClients = 0;
-
-                querySnapshot.forEach((doc) => {
-                    const clinicName = doc.id;
-                    const data = doc.data();
-                    const count = data.count || 0;
-                    totalClients += count;
-
-                    const clientPanel = document.createElement('div');
-                    clientPanel.className = 'panel-clinic flex flex-col transition-colors';
-                    clientPanel.innerHTML = `
-                        <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
-                            <span>${clinicName.toUpperCase()}</span>
-                            <span class="text-right font-bold text-lg">${count}</span>
-                        </div>
-                    `;
-                    approvedClientsContent.appendChild(clientPanel);
+                
+                onSnapshot(approvedClientsRef, (querySnapshot) => {
+                    approvedClientsContent.innerHTML = '';
+                    let totalClients = 0;
+    
+                    querySnapshot.forEach((doc) => {
+                        const clinicName = doc.id;
+                        const data = doc.data();
+                        const count = data.count || 0;
+                        totalClients += count;
+    
+                        const clientPanel = document.createElement('div');
+                        clientPanel.className = 'panel-clinic flex flex-col transition-colors';
+                        clientPanel.innerHTML = `
+                            <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
+                                <span>${clinicName.toUpperCase()}</span>
+                                <span class="text-right font-bold text-lg">${count}</span>
+                            </div>
+                        `;
+                        approvedClientsContent.appendChild(clientPanel);
+                    });
+    
+                    approvedClientsCountEl.textContent = totalClients;
+                }, (error) => {
+                    console.error("Error fetching approved clients:", error);
                 });
-
-                approvedClientsCountEl.textContent = totalClients;
             } catch (error) {
-                console.error("Error fetching approved clients:", error);
+                console.error("Error setting up approved clients listener:", error);
             }
         }
 

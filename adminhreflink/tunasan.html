@@ -90,6 +90,13 @@
         .calendar-cell.current-day {
             background-color: #fde68a;
         }
+        .calendar-cell.selected-day {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .calendar-cell.selected-day:hover {
+            background-color: #2563eb;
+        }
         .calendar-count {
             position: absolute;
             top: 4px;
@@ -140,20 +147,20 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="../pictures/CHO LOGO.png" alt="City Health Logo" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="https://placehold.co/80x80/1a237e/white?text=CHO" alt="City Health Logo" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Tunasan Health Center Appointments</h2>
                 </div>
             </div>
             <!-- Back button to return to the main dashboard -->
-            <a href="../admin-cityhealthmuntinlupa2025-2026-colegio_de_muntinlupa.html" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Back to Centers</a>
+            <a href="#" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Back to Centers</a>
         </div>
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
     <!-- Approved Patient Count Div -->
-    <div class="w-full bg-white shadow-md rounded-md p-4 mt-6 text-center font-bold text-lg text-gray-800">
+    <div class="w-full bg-white shadow-md rounded-md p-4 mt-6 text-center font-bold text-lg text-gray-800 max-w-7xl mx-auto">
         Approved Clients this Month: <span id="totalPatientCount">0</span>
     </div>
 
@@ -230,6 +237,7 @@
                         <th class="px-5 py-3 border-b-2 border-gray-200">Last Name</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">First Name</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Middle Name</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">Address</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Service</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Phone</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Email</th>
@@ -244,7 +252,7 @@
                 </thead>
                 <tbody id="appointmentsTableBody" class="text-sm">
                     <!-- Data will be dynamically inserted here by JavaScript -->
-                    <tr><td colspan="14" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
+                    <tr><td colspan="15" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -270,6 +278,8 @@
                         <input type="text" id="editFirstName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         <label class="block text-left text-sm font-medium text-gray-700 mt-2">Middle Name</label>
                         <input type="text" id="editMiddleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Address</label>
+                        <input type="text" id="editAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         <label class="block text-left text-sm font-medium text-gray-700 mt-2">Service</label>
                         <input type="text" id="editService" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         <label class="block text-left text-sm font-medium text-gray-700 mt-2">Phone</label>
@@ -318,7 +328,7 @@
             authDomain: "cho-clinic.firebaseapp.com",
             databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cho-clinic",
-            storageBucket: "cho-clinic.firebasestorage.app",
+            storageBucket: "cho-clinic.appspot.com",
             messagingSenderId: "1078609107976",
             appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
             measurementId: "G-FHE4TNMD0X"
@@ -374,9 +384,24 @@
                     dailyCounts[date] = 1;
                 }
             });
-
             // Update the calendar with the new counts
             updateCalendar(dailyCounts);
+        }
+
+        function highlightSelectedDate(dateString) {
+            // Remove highlight from any previously selected day
+            const previouslySelected = document.querySelector('.calendar-cell.selected-day');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected-day');
+            }
+
+            if (dateString) {
+                // Find the new day cell and highlight it
+                const dayCell = document.querySelector(`.calendar-day[data-date="${dateString}"]`);
+                if (dayCell) {
+                    dayCell.classList.add('selected-day');
+                }
+            }
         }
 
         // Function to render the calendar
@@ -389,10 +414,11 @@
 
             currentMonthYearEl.textContent = `${monthNames[month]} ${year}`;
 
-            // Clear previous calendar days, but keep day headers
-            const existingDays = calendarGridEl.querySelectorAll('.calendar-day');
-            existingDays.forEach(day => day.remove());
-
+            // Clear all previous calendar day and blank cells, keeping only the 7 day headers
+            while (calendarGridEl.children.length > 7) {
+                calendarGridEl.removeChild(calendarGridEl.lastChild);
+            }
+            
             // Add blank cells for the days before the 1st
             for (let i = 0; i < firstDay; i++) {
                 const blankCell = document.createElement('div');
@@ -413,7 +439,7 @@
                     dayCell.classList.add('current-day');
                 }
 
-                calendarGrid.appendChild(dayCell);
+                calendarGridEl.appendChild(dayCell);
             }
         }
         
@@ -448,7 +474,7 @@
             
             if (!data || Object.keys(data).length === 0) {
                 const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `<td colspan="14" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
+                noDataRow.innerHTML = `<td colspan="15" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
                 appointmentsTableBody.appendChild(noDataRow);
                 return;
             }
@@ -507,6 +533,7 @@
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${lastName}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${firstName}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${middleName}</td>
+                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.address || 'N/A'}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${services}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${contactCell}</td>
                     <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
@@ -553,6 +580,7 @@
                     (appointment.firstName && appointment.firstName.toLowerCase().includes(query)) ||
                     (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) ||
                     (appointment.middleName && appointment.middleName.toLowerCase().includes(query)) ||
+                    (appointment.address && appointment.address.toLowerCase().includes(query)) ||
                     (appointment.services && appointment.services.toLowerCase().includes(query)) ||
                     (appointment.phone && appointment.phone.toLowerCase().includes(query)) ||
                     (appointment.email && appointment.email.toLowerCase().includes(query)) ||
@@ -633,7 +661,7 @@
             }, (error) => {
                 console.error("Error fetching data:", error);
                 if (appointmentsTableBody) {
-                    appointmentsTableBody.innerHTML = `<tr><td colspan="14" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+                    appointmentsTableBody.innerHTML = `<tr><td colspan="15" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
                 }
             });
 
@@ -644,8 +672,10 @@
                     currentMonth = 11;
                     currentYear--;
                 }
+                dateInput.value = ''; // Clear date picker
                 generateCalendar(currentYear, currentMonth);
                 updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                filterAndRender(); // Re-filter table for the new month
             });
 
             nextMonthBtn.addEventListener('click', () => {
@@ -654,8 +684,10 @@
                     currentMonth = 0;
                     currentYear++;
                 }
+                dateInput.value = ''; // Clear date picker
                 generateCalendar(currentYear, currentMonth);
                 updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                filterAndRender(); // Re-filter table for the new month
             });
 
             // Event listener for clicking on a calendar date
@@ -664,6 +696,7 @@
                 if (dayCell) {
                     const selectedDate = dayCell.getAttribute('data-date');
                     dateInput.value = selectedDate;
+                    highlightSelectedDate(selectedDate);
                     filterAndRender();
                 }
             });
@@ -676,7 +709,28 @@
             }
             if (dateInput) {
                 dateInput.addEventListener('change', () => {
-                    filterAndRender();
+                    if (dateInput.value) {
+                        // Using UTC functions to avoid timezone-related errors
+                        const selectedDate = new Date(dateInput.value + 'T00:00:00Z');
+                        const year = selectedDate.getUTCFullYear();
+                        const month = selectedDate.getUTCMonth();
+                        
+                        // Update the calendar's state if the month or year has changed
+                        if (year !== currentYear || month !== currentMonth) {
+                            currentYear = year;
+                            currentMonth = month;
+                            generateCalendar(currentYear, currentMonth);
+                            updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                        }
+                        
+                        // Highlight the selected date and filter the table
+                        highlightSelectedDate(dateInput.value);
+                        filterAndRender();
+                    } else {
+                        // If date input is cleared, remove highlight and filter
+                        highlightSelectedDate(null);
+                        filterAndRender();
+                    }
                 });
             }
 
@@ -856,6 +910,7 @@
                         document.getElementById('editLastName').value = appointment.lastName;
                         document.getElementById('editFirstName').value = appointment.firstName;
                         document.getElementById('editMiddleName').value = appointment.middleName;
+                        document.getElementById('editAddress').value = appointment.address;
                         document.getElementById('editService').value = appointment.services;
                         document.getElementById('editPhone').value = appointment.phone;
                         editModal.classList.remove('hidden');
@@ -877,6 +932,7 @@
                     lastName: document.getElementById('editLastName').value,
                     firstName: document.getElementById('editFirstName').value,
                     middleName: document.getElementById('editMiddleName').value,
+                    address: document.getElementById('editAddress').value,
                     services: document.getElementById('editService').value,
                     phone: document.getElementById('editPhone').value,
                 };
@@ -928,7 +984,7 @@
                 let approvedTableContent = '';
                 
                 if (approvedAppointments.length === 0) {
-                    approvedTableContent = `<tr><td colspan="11" class="px-5 py-5 text-center text-gray-500">No approved appointments for this month.</td></tr>`;
+                    approvedTableContent = `<tr><td colspan="12" class="px-5 py-5 text-center text-gray-500">No approved appointments for this month.</td></tr>`;
                 } else {
                     approvedAppointments.forEach(([key, appointment], index) => {
                         approvedTableContent += `
@@ -939,6 +995,7 @@
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.lastName || 'N/A'}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.firstName || 'N/A'}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.middleName || 'N/A'}</td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.address || 'N/A'}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.services || 'N/A'}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.phone || 'N/A'}</td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
@@ -999,6 +1056,7 @@
                                     <th class="px-5 py-3 border-b-2 border-gray-200">Last Name</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200">First Name</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200">Middle Name</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200">Address</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200">Service</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200">Phone</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200">Email</th>
@@ -1022,3 +1080,4 @@
     </script>
 </body>
 </html>
+

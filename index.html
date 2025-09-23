@@ -11,6 +11,16 @@
       font-family: 'Inter', sans-serif;
       scroll-behavior: smooth;
     }
+
+    /* Translucent background photo for the home section */
+    .home-bg-photo {
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+        url('https://placehold.co/1920x1080/E0F2FE/334155?text=Hospital+Exterior');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -28,7 +38,7 @@
       </div>
       <!-- Navigation -->
       <nav class="mt-4 sm:mt-0 space-x-6">
-        <a href="#home" class="text-blue-800 hover:text-yellow-200 font-medium transition-colors">HOME</a>
+        <a href="#homeSection" class="text-blue-800 hover:text-yellow-200 font-medium transition-colors">HOME</a>
         <a href="#about" class="text-blue-800 hover:text-yellow-200 font-medium transition-colors">ABOUT</a>
         <a href="#services" class="text-blue-800 hover:text-yellow-200 font-medium transition-colors">SERVICES</a>
         <a href="#contact" class="text-blue-800 hover:text-yellow-200 font-medium transition-colors">CONTACT</a>
@@ -37,7 +47,7 @@
   </header>
 
   <!-- Home Section -->
-  <section id="homeSection" class="home-bg-gradient text-center py-12 px-4 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-b from-white to-yellow-100">
+  <section id="homeSection" class="home-bg-photo text-center py-12 px-4 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
     <h2 class="text-2xl font-bold text-blue-900">WELCOME!</h2>
 
     <!-- Appointment Button -->
@@ -52,19 +62,22 @@
   </section>
   
   <!-- About Section -->
-  <section id="about" class="bg-gray-50 py-10">
+  <section id="about" class="bg-gray-100 py-10">
+    <!-- Header with a darker blue background -->
     <div class="bg-blue-900 text-white text-center py-2 font-semibold text-lg tracking-wide">
       ABOUT
     </div>
 
-      <div class="max-w-7xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+    <!-- Main content container with the light blue background -->
+    <div class="max-w-7xl mx-auto px-6 mt-0 py-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start bg-blue-100 rounded-lg shadow-lg  bg-gradient-to-b from-white to-yellow-100">
       <!-- Image -->
       <div class="flex justify-center">
-        <img src="pictures/cho.jpg" alt="City Health Office" class="rounded-lg shadow-lg w-full max-w-md">
+        <!-- Using a placeholder URL since the original is a local file path -->
+        <img src="https://placehold.co/600x400/2253B8/FFFFFF?text=City+Health+Office" alt="City Health Office" class="rounded-lg shadow-lg w-full max-w-md">
       </div>
 
       <!-- Text -->
-      <div class="text-justify leading-relaxed space-y-4">
+      <div class="text-justify leading-relaxed space-y-4 text-blue-900">
         <p>
           The City Health Office (CHO) was created under the Republic act No. 7160 also known as the Local Government Code where in public health service was one of the national functions devolved to local government units. It is the one in charge in the delivery of health services to the community and oversees the implementation of different health programs of the Department of Health (DOH).
         </p>
@@ -84,7 +97,7 @@
       SERVICES
     </div>
 
-    <div class="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+    <div class="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center  bg-gradient-to-b from-white to-yellow-100">
       <div class="bg-white rounded-lg shadow-md p-6">
         <h3 class="font-bold text-blue-900">Issuance and release of Death certificates, Transfer certificates or 
 Authorization of exhumation remains</h3>
@@ -162,4 +175,3 @@ the requirements on the Sanitation Code.</p>
   </script>
 </body>
 </html>
-

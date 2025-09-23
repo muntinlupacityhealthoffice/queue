@@ -22,7 +22,7 @@
             color: #1a237e;
         }
         .logo-shadow {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 6px rgba(0, 0, 0, 0.1);
         }
         .clinic-card {
             background-color: #fff;
@@ -97,7 +97,7 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="pictures/CHO LOGO.png" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="https://placehold.co/80x80/1a237e/ffffff?text=CHO" alt="CHO Logo" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Admin Dashboard--- Appointments</h2>
@@ -216,20 +216,22 @@
         import { getFirestore, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Set Firebase log level for debugging
-        setLogLevel('debug');
-
-        const firebaseConfig = {
+        // Use the global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyCoBZyS0BKZe1MMG78WpiK9tFQAZBd-wKg",
             authDomain: "cho-clinic.firebaseapp.com",
             databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cho-clinic",
             storageBucket: "cho-clinic.firebasestorage.app",
             messagingSenderId: "1078609107976",
-            appId: "1:1078609107976:web:5fa1f9d52ad7ec5317c5bd",
-            measurementId: "G-W1FZLQ4PG9"
+            appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
+            measurementId: "G-FHE4TNMD0X"
         };
-        const appId = firebaseConfig.appId;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Set Firebase log level for debugging
+        setLogLevel('debug');
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -250,24 +252,36 @@
 
         let userId = null;
 
-        // Listener for authentication state changes. This is the new entry point.
+        // Function to handle authentication
+        const authenticateUser = async () => {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                // Handle authentication error, e.g., show a message to the user
+            }
+        };
+
+        // Listener for authentication state changes.
         onAuthStateChanged(auth, (user) => {
-            // Check if a user is logged in
             if (user) {
-                // If a user exists, this means they're authenticated.
                 console.log("User is logged in.");
                 userId = user.uid;
                 loginStatus.textContent = `Signed in as Admin`;
-                
-                // Now that we have an authenticated user, set up Firestore listeners
                 setupFirestoreListeners();
             } else {
-                // If no user exists, redirect back to the login page
                 console.log("No user found. Redirecting to login page.");
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
             }
         });
         
+        // Call the authentication function on page load
+        authenticateUser();
+
         function setupFirestoreListeners() {
             // Firestore listener for approved clients
             // The security rules for the Firestore database are set to allow authenticated users to read and write data to the '/artifacts/{appId}/public/data/{your_collection_name}' path.
@@ -299,6 +313,10 @@
                 renderApprovedClients(clinicsData);
             }, (error) => {
                 console.error("Error fetching approved clients:", error);
+                // Check if the error is due to insufficient permissions
+                if (error.code === 'permission-denied') {
+                    console.error("Permission Denied: Please check your Firestore security rules to ensure you have read access to the 'approved_clients' collection.");
+                }
             });
         }
 

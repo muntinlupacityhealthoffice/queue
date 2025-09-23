@@ -101,7 +101,6 @@
                             <option value="">--SELECT--</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
-                            <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
@@ -270,7 +269,7 @@
         // All health centers and their display names with associated services
        const healthCenterData = {
             "city_health_office": { name: "CITY HEALTH OFFICE", services: ["death_cert/transfer_exhumation", "water_laboratory", "medical_certificate", "sanitary_permit", "others"] },
-            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "laboratory", "dental", "others"] },
+            "tunasan": { name: "TUNASAN HEALTH CENTER", services: ["checkup", "medical_certificate", "laboratory", "vaccination_adults", "vaccination_babies", "dental", "others"] },
             "victoria": { name: "VICTORIA HEALTH CENTER", services: ["checkup", "medical_certificate", "vaccination_adults", "vaccination_babies", "dental", "others"] },
             "laguerta": { name: "LAGUERTA HEALTH CENTER", services: ["checkup", "medical_certificate", "dental", "laboratory", "vaccination_adults", "vaccination_babies", "others"] },
             "poblacion": { name: "POBLACION HEALTH CENTER", services: ["checkup", "medical_certificate", "laboratory", "vaccination_adults", "vaccination_babies", "vaccination_rabies", "dental", "others"] },
@@ -483,6 +482,7 @@
                         <p><strong class="font-semibold">Full Name:</strong> ${allData.firstName} ${allData.middleName} ${allData.lastName}</p>
                         <p><strong class="font-semibold">Age:</strong> ${allData.age}</p>
                         <p><strong class="font-semibold">Sex:</strong> ${allData.sex}</p>
+                        <p><strong class="font-semibold">Address:</strong> ${allData.address}</p>
                         <p><strong class="font-semibold">Email:</strong> ${allData.email}</p>
                         <p><strong class="font-semibold">Phone:</strong> ${allData.phone}</p>
                         <p><strong class="font-semibold">Service:</strong> ${selectedService}</p>

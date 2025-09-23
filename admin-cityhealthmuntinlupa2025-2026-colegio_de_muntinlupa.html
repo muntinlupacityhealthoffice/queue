@@ -90,6 +90,15 @@
         .panel-content.expanded {
             display: block;
         }
+        .panel-clinic {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s;
+        }
+        .panel-clinic:hover {
+            background-color: #f7f7f7;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -121,7 +130,8 @@
                     <span id="approvedClientsCount" class="text-lg font-bold">0</span>
                 </div>
                 <div id="approvedClientsContent" class="panel-content">
-                    </div>
+                    <!-- Dynamic content will be rendered here by JavaScript -->
+                </div>
             </div>
         </aside>
 
@@ -250,6 +260,13 @@
         const approvedClientsContent = document.getElementById('approvedClientsContent');
         const loginStatus = document.getElementById('loginStatus');
 
+        const clinicsList = [
+            "ALABANG", "AYALA ALABANG", "BAGONG SILANG", "BAYANAN ANNEX", 
+            "BAYANAN MAIN", "BULI", "CITY HEALTH OFFICE", "CUPANG", "LAGUERTA",
+            "LAKEVIEW", "POBLACION", "PUTATAN", "PUTATAN ANNEX", "SITIO STO. NINO",
+            "SOUTHVILLE", "SUCAT", "TUNASAN", "VICTORIA"
+        ];
+        
         let userId = null;
 
         // Function to handle authentication
@@ -272,7 +289,7 @@
                 console.log("User is logged in.");
                 userId = user.uid;
                 loginStatus.textContent = `Signed in as Admin`;
-                setupFirestoreListeners();
+                renderApprovedClients(clinicsList);
             } else {
                 console.log("No user found. Redirecting to login page.");
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
@@ -282,79 +299,20 @@
         // Call the authentication function on page load
         authenticateUser();
 
-        function setupFirestoreListeners() {
-            // Firestore listener for approved clients
-            // The security rules for the Firestore database are set to allow authenticated users to read and write data to the '/artifacts/{appId}/public/data/{your_collection_name}' path.
-            // This is a public collection that can be accessed by all users of the app.
-            const approvedCollectionPath = `/artifacts/${appId}/public/data/approved_clients`;
-            const q = query(collection(db, approvedCollectionPath), where("status", "==", "Approved"));
-            
-            onSnapshot(q, (snapshot) => {
-                const totalApproved = snapshot.docs.length;
-                approvedClientsCountEl.textContent = totalApproved;
-                
-                const clinicsData = {};
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const clinicName = data.clinic || "Unknown Clinic";
-                    const serviceType = data.service || "Unknown Service";
-
-                    if (!clinicsData[clinicName]) {
-                        clinicsData[clinicName] = { total: 0, services: {} };
-                    }
-                    clinicsData[clinicName].total++;
-
-                    if (!clinicsData[clinicName].services[serviceType]) {
-                        clinicsData[clinicName].services[serviceType] = 0;
-                    }
-                    clinicsData[clinicName].services[serviceType]++;
-                });
-
-                renderApprovedClients(clinicsData);
-            }, (error) => {
-                console.error("Error fetching approved clients:", error);
-                // Check if the error is due to insufficient permissions
-                if (error.code === 'permission-denied') {
-                    console.error("Permission Denied: Please check your Firestore security rules to ensure you have read access to the 'approved_clients' collection.");
-                }
-            });
-        }
-
-        function renderApprovedClients(clinicsData) {
+        function renderApprovedClients(clientsList) {
             approvedClientsContent.innerHTML = '';
-            for (const clinicName in clinicsData) {
-                const clinicTotal = clinicsData[clinicName].total;
-                const services = clinicsData[clinicName].services;
+            approvedClientsCountEl.textContent = clientsList.length;
 
-                const clinicPanel = document.createElement('div');
-                clinicPanel.className = 'panel-clinic p-2 cursor-pointer border-b border-gray-200 transition-colors hover:bg-gray-100';
-                clinicPanel.innerHTML = `
+            clientsList.forEach(clientName => {
+                const clientPanel = document.createElement('div');
+                clientPanel.className = 'panel-clinic flex flex-col transition-colors';
+                clientPanel.innerHTML = `
                     <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
-                        <span>${clinicName}</span>
-                        <span>${clinicTotal}</span>
+                        <span>${clientName}</span>
                     </div>
                 `;
-                approvedClientsContent.appendChild(clinicPanel);
-
-                const servicesContent = document.createElement('div');
-                servicesContent.className = 'panel-services pl-4 mt-2 hidden';
-                
-                for (const serviceName in services) {
-                    const serviceCount = services[serviceName];
-                    const serviceItem = document.createElement('div');
-                    serviceItem.className = 'flex justify-between items-center text-xs text-gray-600 py-1';
-                    serviceItem.innerHTML = `
-                        <span>${serviceName}</span>
-                        <span>${serviceCount}</span>
-                    `;
-                    servicesContent.appendChild(serviceItem);
-                }
-                approvedClientsContent.appendChild(servicesContent);
-
-                clinicPanel.addEventListener('click', () => {
-                    servicesContent.classList.toggle('hidden');
-                });
-            }
+                approvedClientsContent.appendChild(clientPanel);
+            });
         }
 
         // Function to filter clinics based on search input

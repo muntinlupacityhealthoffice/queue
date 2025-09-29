@@ -864,7 +864,13 @@
                     }
                 });
 
-                document.getElementById('printBtn').addEventListener('click', () => window.print());
+               document.getElementById('printBtn').addEventListener('click', () => {
+                    document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                    window.print();
+                });
+
 
 
             } else {

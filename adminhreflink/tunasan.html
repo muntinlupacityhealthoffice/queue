@@ -583,6 +583,21 @@
                     renderTable(finalData, duplicates);
                 }
 
+                function updateDeleteButtonState() {
+                    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                    const checkedCheckboxes = document.querySelectorAll('#appointmentsTableBody .appointment-checkbox:checked');
+                    if (checkedCheckboxes.length > 0) {
+                        deleteSelectedBtn.disabled = false;
+                        deleteSelectedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        deleteSelectedBtn.disabled = true;
+                        deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        deleteSelectedBtn.textContent = 'Delete Selected';
+                        clearTimeout(confirmTimeout);
+                        confirmingButton = null;
+                    }
+                }
+
                 // --- Start of executable code ---
 
                 const appointmentsRef = ref(database, 'appointments/tunasan');
@@ -629,6 +644,77 @@
                         filterAndRender();
                     });
                 });
+                
+                document.getElementById('toggleDeletionBtn').addEventListener('click', () => {
+                    document.body.classList.toggle('deletion-mode');
+                    const isDeletionMode = document.body.classList.contains('deletion-mode');
+                    const toggleBtn = document.getElementById('toggleDeletionBtn');
+                    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+                    if (isDeletionMode) {
+                        toggleBtn.textContent = 'Done';
+                        toggleBtn.classList.remove('bg-red-500');
+                        toggleBtn.classList.add('bg-gray-500');
+                        deleteSelectedBtn.classList.remove('hidden');
+                    } else {
+                        toggleBtn.textContent = 'Manage Deletions';
+                        toggleBtn.classList.remove('bg-gray-500');
+                        toggleBtn.classList.add('bg-red-500');
+                        deleteSelectedBtn.classList.add('hidden');
+                        deleteSelectedBtn.disabled = true;
+                        deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        selectAllCheckbox.checked = false;
+                        document.querySelectorAll('.appointment-checkbox').forEach(cb => cb.checked = false);
+                    }
+                });
+
+                document.getElementById('selectAllCheckbox').addEventListener('change', () => {
+                    const isChecked = document.getElementById('selectAllCheckbox').checked;
+                    document.querySelectorAll('#appointmentsTableBody .appointment-checkbox').forEach(cb => {
+                        cb.checked = isChecked;
+                    });
+                    updateDeleteButtonState();
+                });
+
+                document.getElementById('appointmentsTableBody').addEventListener('change', (e) => {
+                    if (e.target.classList.contains('appointment-checkbox')) {
+                        updateDeleteButtonState();
+                    }
+                });
+
+                document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+                    const deleteBtn = document.getElementById('deleteSelectedBtn');
+                    if (deleteBtn.textContent === 'Confirm Delete?') {
+                        const checkedCheckboxes = document.querySelectorAll('#appointmentsTableBody .appointment-checkbox:checked');
+                        checkedCheckboxes.forEach(checkbox => {
+                            const key = checkbox.getAttribute('data-key');
+                            if (key) {
+                                const appointmentRef = ref(database, `appointments/tunasan/${key}`);
+                                remove(appointmentRef).catch(error => {
+                                    console.error(`Error deleting appointment ${key}:`, error);
+                                });
+                            }
+                        });
+                        
+                        clearTimeout(confirmTimeout);
+                        confirmingButton = null;
+                        deleteBtn.textContent = 'Delete Selected';
+                        updateDeleteButtonState();
+                        document.getElementById('selectAllCheckbox').checked = false;
+
+                    } else {
+                        deleteBtn.textContent = 'Confirm Delete?';
+                        confirmingButton = deleteBtn;
+                        confirmTimeout = setTimeout(() => {
+                            if (confirmingButton === deleteBtn) {
+                                deleteBtn.textContent = 'Delete Selected';
+                                confirmingButton = null;
+                            }
+                        }, 3000);
+                    }
+                });
+
 
                 document.getElementById('appointmentsTableBody').addEventListener('click', (e) => {
                     const button = e.target;

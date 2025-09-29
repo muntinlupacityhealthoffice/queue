@@ -690,7 +690,7 @@
                         checkedCheckboxes.forEach(checkbox => {
                             const key = checkbox.getAttribute('data-key');
                             if (key) {
-                                const appointmentRef = ref(database, `appointments/tunasan/${key}`);
+                                const appointmentRef = ref(database, `appointments/ayala_alabang/${key}`);
                                 remove(appointmentRef).catch(error => {
                                     console.error(`Error deleting appointment ${key}:`, error);
                                 });
@@ -723,7 +723,7 @@
                     
                     if (action) {
                          if (button.textContent === 'Confirm?') {
-                            const appointmentRef = ref(database, `appointments/tunasan/${key}`);
+                            const appointmentRef = ref(database, `appointments/ayala_alabang/${key}`);
                             if (action === 'delete') {
                                 remove(appointmentRef);
                             } else {
@@ -809,7 +809,7 @@
                         services: document.getElementById('editService').value,
                         phone: document.getElementById('editPhone').value,
                     };
-                    update(ref(database, `appointments/tunasan/${key}`), updatedData).then(() => {
+                    update(ref(database, `appointments/ayala_alabang/${key}`), updatedData).then(() => {
                         document.getElementById('editModal').classList.add('hidden');
                     });
                 });

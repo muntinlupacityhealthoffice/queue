@@ -106,7 +106,7 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="https://placehold.co/80x80/1a237e/ffffff?text=CHO" alt="CHO Logo" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="../pictures/CHO LOGO.png" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Admin Dashboard--- Appointments</h2>
@@ -126,11 +126,30 @@
         <aside class="w-1/4 pr-8">
             <div id="approvedClientsPanel" class="panel">
                 <div class="panel-header">
-                    <span>Approved Clients</span>
+                    <span>Approved Clients per Health Center</span>
                     <span id="approvedClientsCount" class="text-lg font-bold">0</span>
                 </div>
                 <div id="approvedClientsContent" class="panel-content">
                     <!-- Dynamic content will be rendered here by JavaScript -->
+                </div>
+            </div>
+            <div id="approvedClientsPerMonthPanel" class="panel">
+                <div class="panel-header">
+                    <span>Approved Clients per Month</span>
+                </div>
+                <div id="calendarContainer" class="hidden mt-4 text-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <button id="prevYearBtn" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
+                        <span id="currentYear" class="font-bold text-dark-blue">2025</span>
+                        <button id="nextYearBtn" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&gt;</button>
+                    </div>
+                    <div id="monthsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 text-center">
+                        <!-- Months will be generated here -->
+                    </div>
+                    <button id="clearMonthFilterBtn" class="w-full mt-3 bg-gray-300 text-gray-700 px-4 py-1 rounded-full font-semibold hover:bg-gray-400 transition text-xs">Clear Filter</button>
+                </div>
+                <div id="approvedClientsPerMonthContent" class="panel-content">
+                    <!-- Dynamic monthly content will be rendered here by JavaScript -->
                 </div>
             </div>
         </aside>
@@ -255,14 +274,97 @@
         const logoutModal = document.getElementById('logoutModal');
         const confirmLogoutButton = document.getElementById('confirmLogoutButton');
         const cancelLogoutButton = document.getElementById('cancelLogoutButton');
+        const loginStatus = document.getElementById('loginStatus');
+
+        // Panels
         const approvedClientsPanel = document.getElementById('approvedClientsPanel');
         const approvedClientsCountEl = document.getElementById('approvedClientsCount');
         const approvedClientsContent = document.getElementById('approvedClientsContent');
-        const loginStatus = document.getElementById('loginStatus');
+        const approvedClientsPerMonthPanel = document.getElementById('approvedClientsPerMonthPanel');
+        const approvedClientsPerMonthContent = document.getElementById('approvedClientsPerMonthContent');
         
-        let userId = null;
+        // Calendar UI elements
+        const calendarContainer = document.getElementById('calendarContainer');
+        const prevYearBtn = document.getElementById('prevYearBtn');
+        const nextYearBtn = document.getElementById('nextYearBtn');
+        const currentYearEl = document.getElementById('currentYear');
+        const monthsGrid = document.getElementById('monthsGrid');
+        const clearMonthFilterBtn = document.getElementById('clearMonthFilterBtn');
 
-        // Function to handle authentication
+        // State variables
+        let userId = null;
+        let currentCalendarYear = new Date().getFullYear();
+        let selectedMonthFilter = null; // e.g., "September 2025"
+        let allMonthlyCounts = {}; // To store processed data from Firestore
+
+        // --- Calendar Functions ---
+
+        // Renders the calendar for a specific year
+        function renderCalendar(year) {
+            currentCalendarYear = year;
+            currentYearEl.textContent = year;
+            monthsGrid.innerHTML = '';
+            const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthLongNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            monthShortNames.forEach((month, index) => {
+                const fullMonthKey = `${monthLongNames[index]} ${year}`;
+                const monthBtn = document.createElement('button');
+                monthBtn.textContent = month;
+                monthBtn.className = 'p-2 rounded hover:bg-gray-200 transition';
+                if (fullMonthKey === selectedMonthFilter) {
+                    monthBtn.classList.add('bg-blue-500', 'text-white');
+                }
+
+                monthBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent panel from closing
+                    
+                    const currentlySelected = monthsGrid.querySelector('.bg-blue-500');
+                    if (currentlySelected) {
+                        currentlySelected.classList.remove('bg-blue-500', 'text-white');
+                    }
+                    
+                    monthBtn.classList.add('bg-blue-500', 'text-white');
+                    selectedMonthFilter = fullMonthKey;
+                    
+                    displayMonthlyCounts(); // Re-render the list with the new filter
+                });
+                monthsGrid.appendChild(monthBtn);
+            });
+        }
+
+        // Renders the list of months based on filters
+        function displayMonthlyCounts() {
+            approvedClientsPerMonthContent.innerHTML = '';
+
+            let monthKeysToDisplay = Object.keys(allMonthlyCounts);
+            if (selectedMonthFilter) {
+                monthKeysToDisplay = monthKeysToDisplay.filter(key => key === selectedMonthFilter);
+            }
+            
+            const sortedMonths = monthKeysToDisplay.sort((a, b) => {
+                return allMonthlyCounts[b].sortDate - allMonthlyCounts[a].sortDate;
+            });
+
+            if (sortedMonths.length === 0) {
+                approvedClientsPerMonthContent.innerHTML = `<div class="text-sm text-gray-500 p-2">No approved clients for this period.</div>`;
+                return;
+            }
+
+            sortedMonths.forEach(monthKey => {
+                const count = allMonthlyCounts[monthKey].count;
+                const monthPanel = document.createElement('div');
+                monthPanel.className = 'panel-clinic flex justify-between items-center text-sm font-medium text-dark-blue';
+                monthPanel.innerHTML = `
+                    <span>${monthKey}</span>
+                    <span class="text-right font-bold text-lg">${count}</span>
+                `;
+                approvedClientsPerMonthContent.appendChild(monthPanel);
+            });
+        }
+
+        // --- Core Application Logic ---
+
         const authenticateUser = async () => {
             try {
                 if (initialAuthToken) {
@@ -272,28 +374,22 @@
                 }
             } catch (error) {
                 console.error("Authentication failed:", error);
-                // Handle authentication error, e.g., show a message to the user
             }
         };
 
-        // Listener for authentication state changes.
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                console.log("User is logged in.");
                 userId = user.uid;
                 loginStatus.textContent = `Signed in as Admin`;
                 fetchAndRenderApprovedClients();
             } else {
-                console.log("No user found. Redirecting to login page.");
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
             }
         });
         
-        // Call the authentication function on page load
         authenticateUser();
 
-        // This function now listens to the main 'appointments' collection
-        // and dynamically calculates the approved counts for each clinic.
+        // Fetches data and triggers rendering
         function fetchAndRenderApprovedClients() {
             try {
                 const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
@@ -302,92 +398,112 @@
                     approvedClientsContent.innerHTML = '';
                     let totalClients = 0;
                     const clinicCounts = {};
+                    const monthlyCounts = {};
     
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
-                        // Filter for appointments that are 'Approved' and have a clinic name
-                        if (data.status === 'Approved' && data.clinic) {
-                            const clinicName = data.clinic.toUpperCase();
-                            // Increment the count for that clinic
-                            if (clinicCounts[clinicName]) {
-                                clinicCounts[clinicName]++;
-                            } else {
-                                clinicCounts[clinicName] = 1;
+                        if (data.status === 'Approved') {
+                            // Clinic Count Logic
+                            if (data.clinic) {
+                                const clinicName = data.clinic.toUpperCase();
+                                clinicCounts[clinicName] = (clinicCounts[clinicName] || 0) + 1;
+                            }
+
+                            // Monthly Count Logic
+                            let appointmentDate;
+                            if (data.timestamp) {
+                                if (data.timestamp.toDate) { appointmentDate = data.timestamp.toDate(); } 
+                                else if (typeof data.timestamp === 'string' || typeof data.timestamp === 'number') { appointmentDate = new Date(data.timestamp); }
+                            }
+
+                            if (appointmentDate && !isNaN(appointmentDate.getTime())) { 
+                                const year = appointmentDate.getFullYear();
+                                const month = appointmentDate.getMonth();
+                                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                                const monthKey = `${monthNames[month]} ${year}`;
+
+                                if (!monthlyCounts[monthKey]) {
+                                    monthlyCounts[monthKey] = { count: 0, sortDate: new Date(year, month, 1) };
+                                }
+                                monthlyCounts[monthKey].count++;
                             }
                         }
                     });
     
-                    // Render the clinic counts from the new object
+                    // Render Clinic Counts
                     for (const clinicName in clinicCounts) {
-                        if (Object.prototype.hasOwnProperty.call(clinicCounts, clinicName)) {
-                            const count = clinicCounts[clinicName];
-                            totalClients += count;
-        
-                            const clientPanel = document.createElement('div');
-                            clientPanel.className = 'panel-clinic flex flex-col transition-colors';
-                            clientPanel.innerHTML = `
-                                <div class="flex justify-between items-center text-sm font-medium text-dark-blue">
-                                    <span>${clinicName}</span>
-                                    <span class="text-right font-bold text-lg">${count}</span>
-                                </div>
-                            `;
-                            approvedClientsContent.appendChild(clientPanel);
-                        }
+                        const count = clinicCounts[clinicName];
+                        totalClients += count;
+                        const clientPanel = document.createElement('div');
+                        clientPanel.className = 'panel-clinic flex flex-col transition-colors';
+                        clientPanel.innerHTML = `<div class="flex justify-between items-center text-sm font-medium text-dark-blue"><span>${clinicName}</span><span class="text-right font-bold text-lg">${count}</span></div>`;
+                        approvedClientsContent.appendChild(clientPanel);
                     }
-    
                     approvedClientsCountEl.textContent = totalClients;
-                }, (error) => {
-                    console.error("Error fetching approved clients:", error);
-                });
+
+                    // Store and display monthly counts
+                    allMonthlyCounts = monthlyCounts;
+                    displayMonthlyCounts();
+
+                    // Initialize calendar on first data load
+                    if (!monthsGrid.hasChildNodes()) {
+                        renderCalendar(new Date().getFullYear());
+                    }
+
+                }, (error) => console.error("Error fetching approved clients:", error));
             } catch (error) {
                 console.error("Error setting up approved clients listener:", error);
             }
         }
 
-        // Function to filter clinics based on search input
+        // Function to filter health center cards
         function filterClinics() {
             const filterText = searchInput.value.toLowerCase();
             clinics.forEach(clinic => {
                 const clinicName = clinic.querySelector('h3').textContent.toLowerCase();
-                if (clinicName.includes(filterText)) {
-                    clinic.style.display = 'flex';
-                } else {
-                    clinic.style.display = 'none';
-                }
+                clinic.style.display = clinicName.includes(filterText) ? 'flex' : 'none';
             });
         }
 
-        // Event listener for typing in the search bar
-        searchInput.addEventListener('keyup', filterClinics);
+        // --- Event Listeners ---
 
-        // Event listener for the clear button
+        searchInput.addEventListener('keyup', filterClinics);
         clearButton.addEventListener('click', () => {
             searchInput.value = '';
             filterClinics();
         });
 
-        // Event listener to show the modal when Log Out is clicked
-        logoutButton.addEventListener('click', () => {
-            logoutModal.style.display = 'flex';
-        });
-
-        // Event listener to handle "Yes, Log Out" click
+        logoutButton.addEventListener('click', () => { logoutModal.style.display = 'flex'; });
+        cancelLogoutButton.addEventListener('click', () => { logoutModal.style.display = 'none'; });
         confirmLogoutButton.addEventListener('click', () => {
              signOut(auth).then(() => {
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html?logout=success';
-            }).catch((error) => {
-                console.error("Logout failed:", error);
-            });
-        });
-
-        // Event listener to handle "Cancel" click (hides modal)
-        cancelLogoutButton.addEventListener('click', () => {
-            logoutModal.style.display = 'none';
+            }).catch((error) => console.error("Logout failed:", error));
         });
         
-        // Event listener for the new approved clients panel
-        approvedClientsPanel.addEventListener('click', () => {
-            approvedClientsContent.classList.toggle('expanded');
+        // Listeners for collapsible panels
+        approvedClientsPanel.addEventListener('click', () => approvedClientsContent.classList.toggle('expanded'));
+        approvedClientsPerMonthPanel.addEventListener('click', () => {
+            calendarContainer.classList.toggle('hidden');
+            approvedClientsPerMonthContent.classList.toggle('expanded');
+        });
+
+        // Listeners for calendar navigation
+        prevYearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            renderCalendar(currentCalendarYear - 1);
+        });
+
+        nextYearBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            renderCalendar(currentCalendarYear + 1);
+        });
+
+        clearMonthFilterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedMonthFilter = null;
+            renderCalendar(currentCalendarYear); // Re-render to clear selection style
+            displayMonthlyCounts();
         });
     </script>
 </body>

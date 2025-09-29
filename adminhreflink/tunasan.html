@@ -225,7 +225,7 @@
         </div>
 
         <!-- Appointment Data Table -->
-        <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="table-container bg-white shadow-md rounded-lg">
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -550,10 +550,21 @@
                     const selectedDate = document.getElementById('dateInput').value;
                     const filteredBySearch = allAppointments.filter(([key, appointment]) => {
                         const status = appointment.status || 'Scheduled';
-                        const matchesText = ((appointment.firstName && appointment.firstName.toLowerCase().includes(query)) || (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) || (appointment.services && appointment.services.toLowerCase().includes(query)));
+                        const matchesText = (
+                            (appointment.firstName && appointment.firstName.toLowerCase().includes(query)) ||
+                            (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) ||
+                            (appointment.middleName && appointment.middleName.toLowerCase().includes(query)) ||
+                            (appointment.address && appointment.address.toLowerCase().includes(query)) ||
+                            (appointment.services && appointment.services.toLowerCase().includes(query)) ||
+                            (appointment.phone && appointment.phone.toLowerCase().includes(query)) ||
+                            (appointment.email && appointment.email.toLowerCase().includes(query)) ||
+                            (appointment.specificDetails && appointment.specificDetails.toLowerCase().includes(query)) ||
+                            (status && status.toLowerCase().includes(query))
+                        );
                         const matchesDate = !selectedDate || appointment.preferredDate === selectedDate;
                         return matchesText && matchesDate;
                     });
+
                     let finalData = {};
                     if (currentFilter === 'All') {
                         finalData = Object.fromEntries(filteredBySearch);
@@ -661,6 +672,45 @@
                         document.getElementById('editModal').classList.remove('hidden');
                     }
                 });
+
+                document.getElementById('viewServiceTotalsBtn').addEventListener('click', () => {
+                    const serviceCounts = {};
+                    allAppointments.forEach(([key, appointment]) => {
+                        const appointmentDate = new Date(appointment.preferredDate);
+                        if (appointment.status === 'Approved' && appointment.services && appointmentDate.getFullYear() === currentYear && appointmentDate.getMonth() === currentMonth) {
+                            const serviceName = appointment.services;
+                            serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+                        }
+                    });
+
+                    const serviceListContainer = document.getElementById('serviceListContainer');
+                    const modalTitle = document.getElementById('serviceCountTitle');
+                    const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' });
+                    
+                    modalTitle.textContent = `Approved Service Totals for ${monthName} ${currentYear}`;
+                    
+                    let serviceListHtml = '';
+                    if (Object.keys(serviceCounts).length > 0) {
+                        for (const [service, count] of Object.entries(serviceCounts)) {
+                            serviceListHtml += `
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">${service}</span>
+                                    <span class="text-sm font-bold text-blue-600">${count}</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        serviceListHtml = `<p class="text-center text-gray-500">No approved appointments found for this month.</p>`;
+                    }
+                    
+                    serviceListContainer.innerHTML = serviceListHtml;
+                    document.getElementById('serviceCountModal').classList.remove('hidden');
+                });
+
+                document.getElementById('closeServiceCountModalBtn').addEventListener('click', () => {
+                    document.getElementById('serviceCountModal').classList.add('hidden');
+                });
+
 
                 document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
                 document.getElementById('saveEditBtn').addEventListener('click', () => {

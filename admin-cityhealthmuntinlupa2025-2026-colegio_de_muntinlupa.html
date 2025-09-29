@@ -60,46 +60,7 @@
             max-width: 90%;
             width: 400px;
         }
-        /* Styles for the restored panels */
-        .panel {
-            background-color: #fff;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 700;
-            color: #1a237e;
-        }
-        .panel-content {
-            display: none;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-            margin-top: 1rem;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .panel-content.expanded {
-            display: block;
-        }
-        .panel-clinic {
-            padding: 0.5rem;
-            cursor: pointer;
-            border-bottom: 1px solid #e2e8f0;
-            transition: background-color 0.2s;
-        }
-        .panel-clinic:hover {
-            background-color: #f7f7f7;
-        }
+        /* Removed panel styles as they are no longer needed */
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -123,25 +84,12 @@
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
-    <main class="container mx-auto p-8 flex-grow flex">
+    <!-- The 'flex' class is removed from main, as there is no longer a sidebar/aside -->
+    <main class="container mx-auto p-8 flex-grow">
         
-        <!-- RESTORED: Sidebar for Approved Clients Stats -->
-        <aside class="w-1/4 pr-8">
-            <div id="approvedClientsPanel" class="panel">
-                <div class="panel-header">
-                    <span>Approved Clients per Clinic</span>
-                    <span id="approvedClientsCount" class="text-lg font-bold">0</span>
-                </div>
-                <div id="approvedClientsContent" class="panel-content">
-                    <!-- Dynamic client counts per clinic will be rendered here by JavaScript -->
-                    <div class="text-sm text-gray-500 p-2">Loading data...</div>
-                </div>
-            </div>
-            <!-- Empty panel container left for future use or simple padding -->
-            <div class="h-4"></div> 
-        </aside>
+        <!-- The entire <aside> containing the Approved Clients panels has been removed -->
 
-        <section class="flex-grow">
+        <section class="w-full">
             <div class="flex justify-end items-center space-x-2 mb-6">
                 <input id="searchInput" type="text" placeholder="Search Center..." class="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
                 <button id="clearButton" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition">CLEAR</button>
@@ -228,9 +176,8 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Use the global variables provided by the environment
@@ -252,7 +199,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        // Note: Firestore is no longer imported or initialized as the data panels were removed.
 
         // UI elements
         const searchInput = document.getElementById('searchInput');
@@ -264,51 +211,8 @@
         const cancelLogoutButton = document.getElementById('cancelLogoutButton');
         const loginStatus = document.getElementById('loginStatus');
 
-        // Panel UI elements
-        const approvedClientsPanel = document.getElementById('approvedClientsPanel');
-        const approvedClientsCountEl = document.getElementById('approvedClientsCount');
-        const approvedClientsContent = document.getElementById('approvedClientsContent');
-
         // State variables
         let userId = null;
-
-        // --- Clinic Name Standardization ---
-        // Define the definitive list of clinic names (Canonical Names) based on the dashboard links
-        const CANONICAL_CLINICS = [
-            "alabang", "ayala_alabang", "bagong_silang", "bayanan_annex",
-            "bayan_main", "buli", "city_health_office", "cupang",
-            "laguerta", "lakeview", "poblacion", "putatan",
-            "putatan_annex", "sitio_sto_nino", "southville", "sucat",
-            "tunasan", "victoria"
-        ];
-        
-        // Helper function to map database names to one of the canonical names
-        function getCanonicalClinicName(rawName) {
-            if (!rawName) return 'UNKNOWN';
-
-            // 1. Clean and normalize the database entry
-            let cleanedName = rawName.toUpperCase().trim();
-            cleanedName = cleanedName.replace(/\s+/g, ' '); // Normalize internal spaces
-            cleanedName = cleanedName.replace(/\./g, ''); // Remove dots (e.g., from STO. NINO)
-            cleanedName = cleanedName.replace(/ HEALTH CENTER/g, ''); // Remove common suffix
-            cleanedName = cleanedName.replace(/ HC/g, ''); // Remove common abbreviation suffix
-            
-            // 2. Check for canonical match
-            for (const canonical of CANONICAL_CLINICS) {
-                // Remove spaces and dots for a more flexible match check
-                const simpleCanonical = canonical.replace(/\s/g, '').replace(/\./g, '');
-                const simpleCleaned = cleanedName.replace(/\s/g, '').replace(/\./g, '');
-
-                if (simpleCleaned.includes(simpleCanonical) || simpleCanonical.includes(simpleCleaned)) {
-                    // Return the official, fully formatted canonical name
-                    return canonical;
-                }
-            }
-
-            // 3. Last resort for aggregation: return the aggressively cleaned name
-            return cleanedName;
-        }
-
 
         // --- Core Application Logic ---
 
@@ -328,7 +232,7 @@
             if (user) {
                 userId = user.uid;
                 loginStatus.textContent = `Signed in as Admin`;
-                fetchAndRenderApprovedClients();
+                // The function to fetch and render approved clients has been removed.
             } else {
                 // Redirect user if not authenticated
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
@@ -336,61 +240,6 @@
         });
         
         authenticateUser();
-
-        // Fetches data, processes, and triggers rendering for approved clients per clinic
-        function fetchAndRenderApprovedClients() {
-            try {
-                // Path to public data collection (appointments)
-                const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
-                
-                onSnapshot(appointmentsRef, (querySnapshot) => {
-                    approvedClientsContent.innerHTML = '';
-                    let totalClients = 0;
-                    const clinicCounts = {};
-    
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        
-                        // Only count clients with 'Approved' status
-                        if (data.status === 'Approved') {
-                            
-                            if (data.clinic) {
-                                // USE THE NEW CANONICAL NAME FUNCTION HERE
-                                const canonicalClinicName = getCanonicalClinicName(data.clinic);
-                                
-                                clinicCounts[canonicalClinicName] = (clinicCounts[canonicalClinicName] || 0) + 1;
-                            }
-                            totalClients++;
-                        }
-                    });
-    
-                    // 1. Convert the clinicCounts object into an array of objects
-                    const sortedClinics = Object.keys(clinicCounts).map(clinicName => ({
-                        name: clinicName,
-                        count: clinicCounts[clinicName]
-                    })).sort((a, b) => b.count - a.count); // 2. Sort descending by count
-
-                    // 3. Render the sorted list
-                    if (sortedClinics.length === 0) {
-                        approvedClientsContent.innerHTML = `<div class="text-sm text-gray-500 p-2">No approved clients found.</div>`;
-                    } else {
-                        sortedClinics.forEach(clinic => {
-                            const clientPanel = document.createElement('div');
-                            clientPanel.className = 'panel-clinic flex flex-col transition-colors';
-                            clientPanel.innerHTML = `<div class="flex justify-between items-center text-sm font-medium text-dark-blue"><span>${clinic.name}</span><span class="text-right font-bold text-lg">${clinic.count}</span></div>`;
-                            approvedClientsContent.appendChild(clientPanel);
-                        });
-                    }
-
-                    // 4. Update the total count display
-                    approvedClientsCountEl.textContent = totalClients;
-
-                }, (error) => console.error("Error fetching approved clients:", error));
-            } catch (error) {
-                console.error("Error setting up approved clients listener:", error);
-            }
-        }
-
 
         // Function to filter health center cards
         function filterClinics() {
@@ -417,8 +266,7 @@
             }).catch((error) => console.error("Logout failed:", error));
         });
         
-        // Listener for collapsible panel
-        approvedClientsPanel.addEventListener('click', () => approvedClientsContent.classList.toggle('expanded'));
+        // Removed listeners for the panels and calendar.
     </script>
 </body>
 </html>

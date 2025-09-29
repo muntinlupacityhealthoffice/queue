@@ -60,6 +60,7 @@
             max-width: 90%;
             width: 400px;
         }
+        /* Styles for the restored panels */
         .panel {
             background-color: #fff;
             border-radius: 0.5rem;
@@ -123,35 +124,21 @@
     </header>
 
     <main class="container mx-auto p-8 flex-grow flex">
+        
+        <!-- RESTORED: Sidebar for Approved Clients Stats -->
         <aside class="w-1/4 pr-8">
             <div id="approvedClientsPanel" class="panel">
                 <div class="panel-header">
-                    <span>Approved Clients per Health Center</span>
+                    <span>Approved Clients per Clinic</span>
                     <span id="approvedClientsCount" class="text-lg font-bold">0</span>
                 </div>
                 <div id="approvedClientsContent" class="panel-content">
-                    <!-- Dynamic content will be rendered here by JavaScript -->
+                    <!-- Dynamic client counts per clinic will be rendered here by JavaScript -->
+                    <div class="text-sm text-gray-500 p-2">Loading data...</div>
                 </div>
             </div>
-            <div id="approvedClientsPerMonthPanel" class="panel">
-                <div class="panel-header">
-                    <span>Approved Clients per Month</span>
-                </div>
-                <div id="calendarContainer" class="hidden mt-4 text-sm">
-                    <div class="flex justify-between items-center mb-2">
-                        <button id="prevYearBtn" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
-                        <span id="currentYear" class="font-bold text-dark-blue">2025</span>
-                        <button id="nextYearBtn" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&gt;</button>
-                    </div>
-                    <div id="monthsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 text-center">
-                        <!-- Months will be generated here -->
-                    </div>
-                    <button id="clearMonthFilterBtn" class="w-full mt-3 bg-gray-300 text-gray-700 px-4 py-1 rounded-full font-semibold hover:bg-gray-400 transition text-xs">Clear Filter</button>
-                </div>
-                <div id="approvedClientsPerMonthContent" class="panel-content">
-                    <!-- Dynamic monthly content will be rendered here by JavaScript -->
-                </div>
-            </div>
+            <!-- Empty panel container left for future use or simple padding -->
+            <div class="h-4"></div> 
         </aside>
 
         <section class="flex-grow">
@@ -161,6 +148,7 @@
             </div>
             
             <div id="healthCentersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Clinic Cards remain the same -->
                 <a href="adminhreflink/alabang.html" class="clinic-card flex flex-col items-center border-2 border-blue-500">
                     <h3 class="text-lg font-semibold text-dark-blue mb-2">ALABANG</h3>
                 </a>
@@ -276,92 +264,51 @@
         const cancelLogoutButton = document.getElementById('cancelLogoutButton');
         const loginStatus = document.getElementById('loginStatus');
 
-        // Panels
+        // Panel UI elements
         const approvedClientsPanel = document.getElementById('approvedClientsPanel');
         const approvedClientsCountEl = document.getElementById('approvedClientsCount');
         const approvedClientsContent = document.getElementById('approvedClientsContent');
-        const approvedClientsPerMonthPanel = document.getElementById('approvedClientsPerMonthPanel');
-        const approvedClientsPerMonthContent = document.getElementById('approvedClientsPerMonthContent');
-        
-        // Calendar UI elements
-        const calendarContainer = document.getElementById('calendarContainer');
-        const prevYearBtn = document.getElementById('prevYearBtn');
-        const nextYearBtn = document.getElementById('nextYearBtn');
-        const currentYearEl = document.getElementById('currentYear');
-        const monthsGrid = document.getElementById('monthsGrid');
-        const clearMonthFilterBtn = document.getElementById('clearMonthFilterBtn');
 
         // State variables
         let userId = null;
-        let currentCalendarYear = new Date().getFullYear();
-        let selectedMonthFilter = null; // e.g., "September 2025"
-        let allMonthlyCounts = {}; // To store processed data from Firestore
 
-        // --- Calendar Functions ---
+        // --- Clinic Name Standardization ---
+        // Define the definitive list of clinic names (Canonical Names) based on the dashboard links
+        const CANONICAL_CLINICS = [
+            "alabang", "ayala_alabang", "bagong_silang", "bayanan_annex",
+            "bayan_main", "buli", "city_health_office", "cupang",
+            "laguerta", "lakeview", "poblacion", "putatan",
+            "putatan_annex", "sitio_sto_nino", "southville", "sucat",
+            "tunasan", "victoria"
+        ];
+        
+        // Helper function to map database names to one of the canonical names
+        function getCanonicalClinicName(rawName) {
+            if (!rawName) return 'UNKNOWN';
 
-        // Renders the calendar for a specific year
-        function renderCalendar(year) {
-            currentCalendarYear = year;
-            currentYearEl.textContent = year;
-            monthsGrid.innerHTML = '';
-            const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const monthLongNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-            monthShortNames.forEach((month, index) => {
-                const fullMonthKey = `${monthLongNames[index]} ${year}`;
-                const monthBtn = document.createElement('button');
-                monthBtn.textContent = month;
-                monthBtn.className = 'p-2 rounded hover:bg-gray-200 transition';
-                if (fullMonthKey === selectedMonthFilter) {
-                    monthBtn.classList.add('bg-blue-500', 'text-white');
-                }
-
-                monthBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent panel from closing
-                    
-                    const currentlySelected = monthsGrid.querySelector('.bg-blue-500');
-                    if (currentlySelected) {
-                        currentlySelected.classList.remove('bg-blue-500', 'text-white');
-                    }
-                    
-                    monthBtn.classList.add('bg-blue-500', 'text-white');
-                    selectedMonthFilter = fullMonthKey;
-                    
-                    displayMonthlyCounts(); // Re-render the list with the new filter
-                });
-                monthsGrid.appendChild(monthBtn);
-            });
-        }
-
-        // Renders the list of months based on filters
-        function displayMonthlyCounts() {
-            approvedClientsPerMonthContent.innerHTML = '';
-
-            let monthKeysToDisplay = Object.keys(allMonthlyCounts);
-            if (selectedMonthFilter) {
-                monthKeysToDisplay = monthKeysToDisplay.filter(key => key === selectedMonthFilter);
-            }
+            // 1. Clean and normalize the database entry
+            let cleanedName = rawName.toUpperCase().trim();
+            cleanedName = cleanedName.replace(/\s+/g, ' '); // Normalize internal spaces
+            cleanedName = cleanedName.replace(/\./g, ''); // Remove dots (e.g., from STO. NINO)
+            cleanedName = cleanedName.replace(/ HEALTH CENTER/g, ''); // Remove common suffix
+            cleanedName = cleanedName.replace(/ HC/g, ''); // Remove common abbreviation suffix
             
-            const sortedMonths = monthKeysToDisplay.sort((a, b) => {
-                return allMonthlyCounts[b].sortDate - allMonthlyCounts[a].sortDate;
-            });
+            // 2. Check for canonical match
+            for (const canonical of CANONICAL_CLINICS) {
+                // Remove spaces and dots for a more flexible match check
+                const simpleCanonical = canonical.replace(/\s/g, '').replace(/\./g, '');
+                const simpleCleaned = cleanedName.replace(/\s/g, '').replace(/\./g, '');
 
-            if (sortedMonths.length === 0) {
-                approvedClientsPerMonthContent.innerHTML = `<div class="text-sm text-gray-500 p-2">No approved clients for this period.</div>`;
-                return;
+                if (simpleCleaned.includes(simpleCanonical) || simpleCanonical.includes(simpleCleaned)) {
+                    // Return the official, fully formatted canonical name
+                    return canonical;
+                }
             }
 
-            sortedMonths.forEach(monthKey => {
-                const count = allMonthlyCounts[monthKey].count;
-                const monthPanel = document.createElement('div');
-                monthPanel.className = 'panel-clinic flex justify-between items-center text-sm font-medium text-dark-blue';
-                monthPanel.innerHTML = `
-                    <span>${monthKey}</span>
-                    <span class="text-right font-bold text-lg">${count}</span>
-                `;
-                approvedClientsPerMonthContent.appendChild(monthPanel);
-            });
+            // 3. Last resort for aggregation: return the aggressively cleaned name
+            return cleanedName;
         }
+
 
         // --- Core Application Logic ---
 
@@ -383,78 +330,67 @@
                 loginStatus.textContent = `Signed in as Admin`;
                 fetchAndRenderApprovedClients();
             } else {
+                // Redirect user if not authenticated
                 window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
             }
         });
         
         authenticateUser();
 
-        // Fetches data and triggers rendering
+        // Fetches data, processes, and triggers rendering for approved clients per clinic
         function fetchAndRenderApprovedClients() {
             try {
+                // Path to public data collection (appointments)
                 const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
                 
                 onSnapshot(appointmentsRef, (querySnapshot) => {
                     approvedClientsContent.innerHTML = '';
                     let totalClients = 0;
                     const clinicCounts = {};
-                    const monthlyCounts = {};
     
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
+                        
+                        // Only count clients with 'Approved' status
                         if (data.status === 'Approved') {
-                            // Clinic Count Logic
+                            
                             if (data.clinic) {
-                                const clinicName = data.clinic.toUpperCase();
-                                clinicCounts[clinicName] = (clinicCounts[clinicName] || 0) + 1;
+                                // USE THE NEW CANONICAL NAME FUNCTION HERE
+                                const canonicalClinicName = getCanonicalClinicName(data.clinic);
+                                
+                                clinicCounts[canonicalClinicName] = (clinicCounts[canonicalClinicName] || 0) + 1;
                             }
-
-                            // Monthly Count Logic
-                            let appointmentDate;
-                            if (data.timestamp) {
-                                if (data.timestamp.toDate) { appointmentDate = data.timestamp.toDate(); } 
-                                else if (typeof data.timestamp === 'string' || typeof data.timestamp === 'number') { appointmentDate = new Date(data.timestamp); }
-                            }
-
-                            if (appointmentDate && !isNaN(appointmentDate.getTime())) { 
-                                const year = appointmentDate.getFullYear();
-                                const month = appointmentDate.getMonth();
-                                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                                const monthKey = `${monthNames[month]} ${year}`;
-
-                                if (!monthlyCounts[monthKey]) {
-                                    monthlyCounts[monthKey] = { count: 0, sortDate: new Date(year, month, 1) };
-                                }
-                                monthlyCounts[monthKey].count++;
-                            }
+                            totalClients++;
                         }
                     });
     
-                    // Render Clinic Counts
-                    for (const clinicName in clinicCounts) {
-                        const count = clinicCounts[clinicName];
-                        totalClients += count;
-                        const clientPanel = document.createElement('div');
-                        clientPanel.className = 'panel-clinic flex flex-col transition-colors';
-                        clientPanel.innerHTML = `<div class="flex justify-between items-center text-sm font-medium text-dark-blue"><span>${clinicName}</span><span class="text-right font-bold text-lg">${count}</span></div>`;
-                        approvedClientsContent.appendChild(clientPanel);
+                    // 1. Convert the clinicCounts object into an array of objects
+                    const sortedClinics = Object.keys(clinicCounts).map(clinicName => ({
+                        name: clinicName,
+                        count: clinicCounts[clinicName]
+                    })).sort((a, b) => b.count - a.count); // 2. Sort descending by count
+
+                    // 3. Render the sorted list
+                    if (sortedClinics.length === 0) {
+                        approvedClientsContent.innerHTML = `<div class="text-sm text-gray-500 p-2">No approved clients found.</div>`;
+                    } else {
+                        sortedClinics.forEach(clinic => {
+                            const clientPanel = document.createElement('div');
+                            clientPanel.className = 'panel-clinic flex flex-col transition-colors';
+                            clientPanel.innerHTML = `<div class="flex justify-between items-center text-sm font-medium text-dark-blue"><span>${clinic.name}</span><span class="text-right font-bold text-lg">${clinic.count}</span></div>`;
+                            approvedClientsContent.appendChild(clientPanel);
+                        });
                     }
+
+                    // 4. Update the total count display
                     approvedClientsCountEl.textContent = totalClients;
-
-                    // Store and display monthly counts
-                    allMonthlyCounts = monthlyCounts;
-                    displayMonthlyCounts();
-
-                    // Initialize calendar on first data load
-                    if (!monthsGrid.hasChildNodes()) {
-                        renderCalendar(new Date().getFullYear());
-                    }
 
                 }, (error) => console.error("Error fetching approved clients:", error));
             } catch (error) {
                 console.error("Error setting up approved clients listener:", error);
             }
         }
+
 
         // Function to filter health center cards
         function filterClinics() {
@@ -481,31 +417,8 @@
             }).catch((error) => console.error("Logout failed:", error));
         });
         
-        // Listeners for collapsible panels
+        // Listener for collapsible panel
         approvedClientsPanel.addEventListener('click', () => approvedClientsContent.classList.toggle('expanded'));
-        approvedClientsPerMonthPanel.addEventListener('click', () => {
-            calendarContainer.classList.toggle('hidden');
-            approvedClientsPerMonthContent.classList.toggle('expanded');
-        });
-
-        // Listeners for calendar navigation
-        prevYearBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            renderCalendar(currentCalendarYear - 1);
-        });
-
-        nextYearBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            renderCalendar(currentCalendarYear + 1);
-        });
-
-        clearMonthFilterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectedMonthFilter = null;
-            renderCalendar(currentCalendarYear); // Re-render to clear selection style
-            displayMonthlyCounts();
-        });
     </script>
 </body>
 </html>
-

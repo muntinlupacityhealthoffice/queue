@@ -572,132 +572,137 @@
                     renderTable(finalData, duplicates);
                 }
 
-                document.addEventListener('DOMContentLoaded', () => {
-                    const appointmentsRef = ref(database, 'appointments/tunasan');
-                    onValue(appointmentsRef, (snapshot) => {
-                        const data = snapshot.val();
-                        allAppointments = data ? Object.entries(data) : [];
-                        updateCounts(data, currentYear, currentMonth);
-                        filterAndRender();
-                    }, (error) => {
-                        console.error("Error fetching data:", error);
-                    });
+                // --- Start of executable code ---
 
-                    // Initialize calendar
-                    currentYear = today.getFullYear();
-                    currentMonth = today.getMonth();
-                    generateCalendar(currentYear, currentMonth);
-                    
-                    // All other event listeners from the original file...
-                     document.getElementById('searchInput').addEventListener('keyup', filterAndRender);
-                     document.getElementById('dateInput').addEventListener('change', () => {
-                         const dateValue = document.getElementById('dateInput').value;
-                         if (dateValue) {
-                            const selectedDate = new Date(dateValue + 'T00:00:00Z');
-                            currentYear = selectedDate.getUTCFullYear();
-                            currentMonth = selectedDate.getUTCMonth();
-                            generateCalendar(currentYear, currentMonth);
-                            updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
-                            highlightSelectedDate(dateValue);
-                         } else {
-                            highlightSelectedDate(null);
-                         }
-                         filterAndRender();
-                     });
-
-                    document.querySelectorAll('.filter-btn').forEach(button => {
-                        button.addEventListener('click', () => {
-                            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-blue-600', 'text-white'));
-                            button.classList.add('active', 'bg-blue-600', 'text-white');
-                            currentFilter = button.textContent;
-                            filterAndRender();
-                        });
-                    });
-
-                    document.getElementById('appointmentsTableBody').addEventListener('click', (e) => {
-                        const button = e.target;
-                        const key = button.getAttribute('data-key');
-                        const action = button.getAttribute('data-action');
-                        
-                        // Handle action buttons (approve, decline, delete) logic
-                        if (action) {
-                             if (button.textContent === 'Confirm?') {
-                                const appointmentRef = ref(database, `appointments/tunasan/${key}`);
-                                if (action === 'delete') {
-                                    remove(appointmentRef);
-                                } else {
-                                    let newStatus = action === 'approve' ? 'Approved' : (action === 'decline' ? 'Declined' : 'Scheduled');
-                                    update(appointmentRef, { status: newStatus });
-                                }
-                                clearTimeout(confirmTimeout);
-                                confirmingButton = null;
-                            } else {
-                                if(confirmingButton) confirmingButton.textContent = confirmingButton.getAttribute('data-action');
-                                button.textContent = 'Confirm?';
-                                confirmingButton = button;
-                                confirmTimeout = setTimeout(() => {
-                                    button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
-                                    if(action === 'delete') button.textContent = '🗑️';
-                                    confirmingButton = null;
-                                }, 3000);
-                            }
-                        }
-
-                        if (button.classList.contains('edit-info-btn')) {
-                            const appointment = allAppointments.find(([k]) => k === key)[1];
-                            document.getElementById('editKey').value = key;
-                            document.getElementById('editLastName').value = appointment.lastName;
-                            document.getElementById('editFirstName').value = appointment.firstName;
-                            document.getElementById('editMiddleName').value = appointment.middleName;
-                            document.getElementById('editAddress').value = appointment.address;
-                            document.getElementById('editService').value = appointment.services;
-                            document.getElementById('editPhone').value = appointment.phone;
-                            document.getElementById('editModal').classList.remove('hidden');
-                        }
-                    });
-
-                    // More event listeners for modals, calendar navigation, printing etc.
-                    document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
-                    document.getElementById('saveEditBtn').addEventListener('click', () => {
-                         const key = document.getElementById('editKey').value;
-                         const updatedData = {
-                            lastName: document.getElementById('editLastName').value,
-                            firstName: document.getElementById('editFirstName').value,
-                            middleName: document.getElementById('editMiddleName').value,
-                            address: document.getElementById('editAddress').value,
-                            services: document.getElementById('editService').value,
-                            phone: document.getElementById('editPhone').value,
-                        };
-                        update(ref(database, `appointments/tunasan/${key}`), updatedData).then(() => {
-                            document.getElementById('editModal').classList.add('hidden');
-                        });
-                    });
-                    
-                    document.getElementById('prevMonthBtn').addEventListener('click', () => {
-                        currentMonth--;
-                        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-                        generateCalendar(currentYear, currentMonth);
-                        updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
-                    });
-                     document.getElementById('nextMonthBtn').addEventListener('click', () => {
-                        currentMonth++;
-                        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-                        generateCalendar(currentYear, currentMonth);
-                        updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
-                    });
-
-                     document.getElementById('calendarGrid').addEventListener('click', (e) => {
-                        const dayCell = e.target.closest('.calendar-day');
-                        if (dayCell) {
-                            const selectedDate = dayCell.getAttribute('data-date');
-                            document.getElementById('dateInput').value = selectedDate;
-                            highlightSelectedDate(selectedDate);
-                            filterAndRender();
-                        }
-                    });
-
-                    document.getElementById('printBtn').addEventListener('click', () => window.print());
+                const appointmentsRef = ref(database, 'appointments/tunasan');
+                onValue(appointmentsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    allAppointments = data ? Object.entries(data) : [];
+                    updateCounts(data, currentYear, currentMonth);
+                    filterAndRender();
+                }, (error) => {
+                    console.error("Error fetching data:", error);
                 });
+
+                // Initialize calendar
+                currentYear = today.getFullYear();
+                currentMonth = today.getMonth();
+                generateCalendar(currentYear, currentMonth);
+                
+                // Set up all event listeners
+                document.getElementById('searchInput').addEventListener('keyup', filterAndRender);
+                document.getElementById('dateInput').addEventListener('change', () => {
+                     const dateValue = document.getElementById('dateInput').value;
+                     if (dateValue) {
+                        const selectedDate = new Date(dateValue + 'T00:00:00Z');
+                        currentYear = selectedDate.getUTCFullYear();
+                        currentMonth = selectedDate.getUTCMonth();
+                        generateCalendar(currentYear, currentMonth);
+                        updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                        highlightSelectedDate(dateValue);
+                     } else {
+                        highlightSelectedDate(null);
+                     }
+                     filterAndRender();
+                });
+
+                document.querySelectorAll('.filter-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(btn => {
+                            btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                            btn.classList.add('bg-gray-300', 'text-gray-700');
+                        });
+                        button.classList.add('active', 'bg-blue-600', 'text-white');
+                        button.classList.remove('bg-gray-300', 'text-gray-700');
+                        currentFilter = button.textContent;
+                        filterAndRender();
+                    });
+                });
+
+                document.getElementById('appointmentsTableBody').addEventListener('click', (e) => {
+                    const button = e.target;
+                    const key = button.getAttribute('data-key');
+                    const action = button.getAttribute('data-action');
+                    
+                    if (action) {
+                         if (button.textContent === 'Confirm?') {
+                            const appointmentRef = ref(database, `appointments/tunasan/${key}`);
+                            if (action === 'delete') {
+                                remove(appointmentRef);
+                            } else {
+                                let newStatus = action === 'approve' ? 'Approved' : (action === 'decline' ? 'Declined' : 'Scheduled');
+                                update(appointmentRef, { status: newStatus });
+                            }
+                            clearTimeout(confirmTimeout);
+                            confirmingButton = null;
+                        } else {
+                            if(confirmingButton) {
+                                const oldAction = confirmingButton.getAttribute('data-action');
+                                confirmingButton.textContent = oldAction === 'delete' ? '🗑️' : oldAction.charAt(0).toUpperCase() + oldAction.slice(1);
+                            }
+                            button.textContent = 'Confirm?';
+                            confirmingButton = button;
+                            confirmTimeout = setTimeout(() => {
+                                button.textContent = action === 'delete' ? '🗑️' : action.charAt(0).toUpperCase() + action.slice(1);
+                                confirmingButton = null;
+                            }, 3000);
+                        }
+                    }
+
+                    if (button.classList.contains('edit-info-btn')) {
+                        const appointment = allAppointments.find(([k]) => k === key)[1];
+                        document.getElementById('editKey').value = key;
+                        document.getElementById('editLastName').value = appointment.lastName;
+                        document.getElementById('editFirstName').value = appointment.firstName;
+                        document.getElementById('editMiddleName').value = appointment.middleName;
+                        document.getElementById('editAddress').value = appointment.address;
+                        document.getElementById('editService').value = appointment.services;
+                        document.getElementById('editPhone').value = appointment.phone;
+                        document.getElementById('editModal').classList.remove('hidden');
+                    }
+                });
+
+                document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
+                document.getElementById('saveEditBtn').addEventListener('click', () => {
+                     const key = document.getElementById('editKey').value;
+                     const updatedData = {
+                        lastName: document.getElementById('editLastName').value,
+                        firstName: document.getElementById('editFirstName').value,
+                        middleName: document.getElementById('editMiddleName').value,
+                        address: document.getElementById('editAddress').value,
+                        services: document.getElementById('editService').value,
+                        phone: document.getElementById('editPhone').value,
+                    };
+                    update(ref(database, `appointments/tunasan/${key}`), updatedData).then(() => {
+                        document.getElementById('editModal').classList.add('hidden');
+                    });
+                });
+                
+                document.getElementById('prevMonthBtn').addEventListener('click', () => {
+                    currentMonth--;
+                    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                    generateCalendar(currentYear, currentMonth);
+                    updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                });
+                 document.getElementById('nextMonthBtn').addEventListener('click', () => {
+                    currentMonth++;
+                    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                    generateCalendar(currentYear, currentMonth);
+                    updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                });
+
+                 document.getElementById('calendarGrid').addEventListener('click', (e) => {
+                    const dayCell = e.target.closest('.calendar-day');
+                    if (dayCell) {
+                        const selectedDate = dayCell.getAttribute('data-date');
+                        document.getElementById('dateInput').value = selectedDate;
+                        highlightSelectedDate(selectedDate);
+                        filterAndRender();
+                    }
+                });
+
+                document.getElementById('printBtn').addEventListener('click', () => window.print());
+
 
             } else {
                 // User is not signed in. Redirect them away.
@@ -712,3 +717,4 @@
     </script>
 </body>
 </html>
+

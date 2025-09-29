@@ -74,7 +74,7 @@
             padding: 0.75rem;
             border: 1px solid #e2e8f0;
             cursor: pointer;
-            transition: background-color: 0.15s ease-in-out;
+            transition: background-color 0.15s ease-in-out;
             position: relative;
         }
         .calendar-cell:hover {
@@ -123,10 +123,10 @@
         @media print {
             body {
                 background-color: #fff !important;
-                font-size: 10pt; /* Standard font size for printing */
+                font-size: 10pt; /* Smaller font for printing */
             }
             
-            .no-print, .table-container { /* Hide original table container */
+            .no-print {
                 display: none !important;
             }
 
@@ -134,41 +134,26 @@
                 display: block !important;
             }
 
-            /* Styles for the new vertical print layout */
-            #print-content .appointment-record {
-                border: 1px solid #666;
-                padding: 12px;
-                margin-bottom: 12px;
-                page-break-inside: avoid;
+            .table-container {
+                overflow-x: visible;
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
             }
-            #print-content .record-header {
-                display: flex;
-                justify-content: space-between;
-                font-weight: bold;
-                margin-bottom: 8px;
-                border-bottom: 1px solid #ccc;
-                padding-bottom: 8px;
+            
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 9pt;
             }
-            #print-content .patient-name {
-                font-size: 1.1em;
-                font-weight: bold;
-                margin-bottom: 8px;
+            th, td {
+                border: 1px solid #333; /* Darker border for print */
+                padding: 6px;
+                text-align: left;
             }
-            #print-content .record-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            #print-content .details-block {
-                margin-top: 8px;
-                grid-column: 1 / -1; /* Make details span full width */
-            }
-            #print-content .details-content {
-                margin-top: 4px;
-                padding-left: 10px;
-                border-left: 2px solid #eee;
-                white-space: pre-wrap; /* Preserve line breaks in details */
-                word-wrap: break-word;
+            th {
+                background-color: #f2f2f2; /* Light gray header for table */
             }
             
             /* Remove link styling */
@@ -178,8 +163,8 @@
             }
 
             @page {
-                size: portrait; /* Set to vertical/portrait */
-                margin: 0.5in;
+                size: landscape;
+                margin: 0.5in; /* Reduce margin */
             }
         }
     </style>
@@ -316,9 +301,6 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Container for print-formatted content -->
-        <div id="print-content" class="print-only hidden"></div>
     </main>
 
     <footer class="w-full header-bg mt-12 border-t-4 border-blue-400 no-print">
@@ -904,72 +886,6 @@
                     document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-US', {
                         year: 'numeric', month: 'long', day: 'numeric'
                     });
-                    
-                    // Logic to generate print content
-                    const query = document.getElementById('searchInput').value.toLowerCase();
-                    const selectedDate = document.getElementById('dateInput').value;
-                    const filteredBySearch = allAppointments.filter(([key, appointment]) => {
-                        const status = appointment.status || 'Scheduled';
-                        const matchesText = (
-                            (appointment.firstName && appointment.firstName.toLowerCase().includes(query)) ||
-                            (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) ||
-                            (appointment.middleName && appointment.middleName.toLowerCase().includes(query)) ||
-                            (appointment.address && appointment.address.toLowerCase().includes(query)) ||
-                            (appointment.services && appointment.services.toLowerCase().includes(query)) ||
-                            (appointment.phone && appointment.phone.toLowerCase().includes(query)) ||
-                            (appointment.email && appointment.email.toLowerCase().includes(query)) ||
-                            (appointment.specificDetails && appointment.specificDetails.toLowerCase().includes(query)) ||
-                            (status && status.toLowerCase().includes(query))
-                        );
-                        const matchesDate = !selectedDate || appointment.preferredDate === selectedDate;
-                        return matchesText && matchesDate;
-                    });
-
-                    let appointmentsToPrint = [];
-                    if (currentFilter === 'All') {
-                        appointmentsToPrint = filteredBySearch.map(a => a[1]);
-                    } else {
-                        appointmentsToPrint = filteredBySearch.filter(([key, appointment]) => (appointment.status || 'Scheduled') === currentFilter).map(a => a[1]);
-                    }
-
-                    appointmentsToPrint.sort((a, b) => {
-                        const dateA = new Date(`${a.preferredDate}T${a.preferredTime || '00:00'}`);
-                        const dateB = new Date(`${b.preferredDate}T${b.preferredTime || '00:00'}`);
-                        return dateA - dateB;
-                    });
-
-                    const printContentEl = document.getElementById('print-content');
-                    let printHTML = '';
-
-                    if (appointmentsToPrint.length === 0) {
-                        printHTML = '<p class="text-center">No appointments to display for the current filter.</p>';
-                    } else {
-                        appointmentsToPrint.forEach(appointment => {
-                            printHTML += `
-                                <div class="appointment-record">
-                                    <div class="record-header">
-                                        <span>${appointment.preferredDate} at ${appointment.preferredTime}</span>
-                                        <span>Status: ${appointment.status || 'Scheduled'}</span>
-                                    </div>
-                                    <div class="patient-name">
-                                        ${appointment.lastName || ''}, ${appointment.firstName || ''} ${appointment.middleName || ''}
-                                    </div>
-                                    <div class="record-grid">
-                                        <div><strong>Address:</strong> ${appointment.address || 'N/A'}</div>
-                                        <div><strong>Service:</strong> ${appointment.services || 'N/A'}</div>
-                                        <div><strong>Phone:</strong> ${appointment.phone || 'N/A'}</div>
-                                        <div><strong>Email:</strong> ${appointment.email || 'N/A'}</div>
-                                        <div class="details-block">
-                                            <strong>Specific Details:</strong>
-                                            <p class="details-content">${appointment.specificDetails || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    }
-                    printContentEl.innerHTML = printHTML;
-
                     window.print();
                 });
 
@@ -998,4 +914,3 @@
     </div>
 </body>
 </html>
-

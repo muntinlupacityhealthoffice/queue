@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,6 +55,91 @@
             cursor: pointer;
             filter: invert(0.5);
         }
+        .edit-info-btn {
+            background-color: #1c7ed6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 150ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .edit-info-btn:hover {
+            background-color: #1971c2;
+        }
+        .calendar-cell {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            position: relative;
+        }
+        .calendar-cell:hover {
+            background-color: #f7fafc;
+        }
+        .calendar-cell.has-appointments {
+            background-color: #dbeafe;
+            font-weight: bold;
+        }
+        .calendar-cell.has-appointments:hover {
+            background-color: #bfdbfe;
+        }
+        .calendar-cell.current-day {
+            background-color: #fde68a;
+        }
+        .calendar-cell.selected-day {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .calendar-cell.selected-day:hover {
+            background-color: #2563eb;
+        }
+        .calendar-count {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            background-color: #4f46e5;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .service-name {
+            cursor: pointer;
+            color: #1c7ed6;
+            text-decoration: underline;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            header, footer, .controls, .print-btn, .edit-info-btn, .delete-row-btn, .deletion-column {
+                display: none !important;
+            }
+            .table-container {
+                overflow-x: visible;
+                box-shadow: none;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -63,19 +147,29 @@
     <header class="w-full header-bg shadow-lg">
         <div class="container mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <img src="../pictures/CHO LOGO.png" alt="City Health Logo" class="rounded-full w-20 h-20 shadow-lg">
+                <img src="../pictures/CHO LOGO.png" class="rounded-full w-20 h-20 shadow-lg">
                 <div class="flex flex-col">
                     <h1 class="text-xl md:text-2xl font-bold text-dark-blue">CITY HEALTH OFFICE</h1>
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Bayanan Main Health Center Appointments</h2>
                 </div>
             </div>
+            <!-- Back button to return to the main dashboard -->
             <a href="../admin-cityhealthmuntinlupa2025-2026-colegio_de_muntinlupa.html" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Back to Centers</a>
         </div>
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
+    <!-- Approved Patient Count Div -->
+    <div class="w-full bg-white shadow-md rounded-md p-4 mt-6 text-center font-bold text-lg text-gray-800 max-w-7xl mx-auto">
+        Approved Clients this Month: <span id="totalPatientCount">0</span>
+    </div>
+
     <main class="container mx-auto p-4 md:p-8 flex-grow">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-2 mb-6">
+        <!-- Patient Count and Search/Filter Section -->
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-2 mb-6 controls">
+            <div class="flex items-center space-x-2">
+                <!-- Count moved into a dedicated section -->
+            </div>
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-1/2">
                 <div class="relative w-full">
                     <input id="searchInput" type="text" placeholder="Search by name or service..." class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
@@ -91,6 +185,7 @@
                 <button id="filterAllBtn" class="filter-btn bg-blue-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-600 transition w-full md:w-auto active">All</button>
                 <button id="filterApprovedBtn" class="filter-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition w-full md:w-auto">Approved</button>
                 <button id="filterDeclinedBtn" class="filter-btn bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-400 transition w-full md:w-auto">Declined</button>
+                <button id="viewServiceTotalsBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-600 transition w-full md:w-auto">View Service Totals</button>
             </div>
             <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto ml-auto items-center">
                 <button id="toggleDeletionBtn" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">Manage Deletions</button>
@@ -98,12 +193,39 @@
             </div>
         </div>
 
+        <!-- Calendar View Section -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <button id="prevMonthBtn" class="px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                </button>
+                <h2 id="currentMonthYear" class="text-xl font-bold"></h2>
+                <button id="nextMonthBtn" class="px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 text-center text-sm">
+                <div class="py-2 font-semibold text-gray-500">Sun</div>
+                <div class="py-2 font-semibold text-gray-500">Mon</div>
+                <div class="py-2 font-semibold text-gray-500">Tue</div>
+                <div class="py-2 font-semibold text-gray-500">Wed</div>
+                <div class="py-2 font-semibold text-gray-500">Thu</div>
+                <div class="py-2 font-semibold text-gray-500">Fri</div>
+                <div class="py-2 font-semibold text-gray-500">Sat</div>
+            </div>
+            <div class="mt-4 text-center print-btn">
+                <button id="printBtn" class="bg-gray-700 text-white px-6 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Print / Download Appointments</button>
+            </div>
+        </div>
+
+        <!-- Warning message for double bookings -->
         <div id="doubleBookingWarning" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
             <strong class="font-bold">Warning!</strong>
             <span class="block sm:inline" id="warningText"></span>
         </div>
 
-        <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
+        <!-- Appointment Data Table -->
+        <div class="table-container bg-white shadow-md rounded-lg">
             <table class="min-w-full leading-normal">
                 <thead>
                     <tr class="bg-gray-100 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -115,19 +237,22 @@
                         <th class="px-5 py-3 border-b-2 border-gray-200">Last Name</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">First Name</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Middle Name</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200">Address</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Service</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Phone</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Email</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200">Specific Details</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Status</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Action</th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Edit Info</th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 text-center deletion-column">
                             Trash
                         </th>
                     </tr>
                 </thead>
                 <tbody id="appointmentsTableBody" class="text-sm">
-                    <tr><td colspan="12" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
+                    <!-- Data will be dynamically inserted here by JavaScript -->
+                    <tr><td colspan="15" class="px-5 py-5 text-center text-gray-500">Authenticating...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -139,9 +264,63 @@
         </div>
     </footer>
 
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Patient Information</h3>
+                <div class="mt-2 px-7 py-3">
+                    <form id="editForm">
+                        <input type="hidden" id="editKey">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Last Name</label>
+                        <input type="text" id="editLastName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">First Name</label>
+                        <input type="text" id="editFirstName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Middle Name</label>
+                        <input type="text" id="editMiddleName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Address</label>
+                        <input type="text" id="editAddress" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Service</label>
+                        <input type="text" id="editService" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <label class="block text-left text-sm font-medium text-gray-700 mt-2">Phone</label>
+                        <input type="text" id="editPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    </form>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Save
+                    </button>
+                    <button id="closeEditModalBtn" class="mt-2 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Service Count Modal -->
+    <div id="serviceCountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 id="serviceCountTitle" class="text-lg leading-6 font-medium text-gray-900">Total Approved Clients per Service</h3>
+                <div id="serviceListContainer" class="mt-4 text-left px-7 py-3 max-h-80 overflow-y-auto">
+                    <!-- Service list will be injected here dynamically -->
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeServiceCountModalBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs -->
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
         
         // Your web app's Firebase configuration
@@ -150,7 +329,7 @@
             authDomain: "cho-clinic.firebaseapp.com",
             databaseURL: "https://cho-clinic-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "cho-clinic",
-            storageBucket: "cho-clinic.firebasestorage.app",
+            storageBucket: "cho-clinic.appspot.com",
             messagingSenderId: "1078609107976",
             appId: "1:1078609107976:web:11cfb6afccf463fc17c5bd",
             measurementId: "G-FHE4TNMD0X"
@@ -158,205 +337,304 @@
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const database = getDatabase(app);
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Define a global variable to hold the fetched appointments
-        let allAppointments = [];
-        let currentFilter = 'All';
-        let confirmTimeout = null;
-        let confirmingButton = null;
-
-        // Function to render the table
-        function renderTable(data, duplicateKeys = []) {
-            const appointmentsTableBody = document.getElementById('appointmentsTableBody');
-            appointmentsTableBody.innerHTML = ''; // Clear existing data
-            
-            if (!data || Object.keys(data).length === 0) {
-                const noDataRow = document.createElement('tr');
-                noDataRow.innerHTML = `<td colspan="12" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
-                appointmentsTableBody.appendChild(noDataRow);
-                return;
-            }
-            
-            // Convert the object to an array of [key, value] pairs for easier filtering and sorting
-            const appointmentsArray = Object.entries(data);
-            
-            appointmentsArray.forEach(([key, appointment]) => {
-                const row = document.createElement('tr');
-                let rowClasses = 'hover:bg-gray-50';
-                
-                // Highlight rows with duplicate time slots
-                if (duplicateKeys.includes(key)) {
-                    rowClasses += ' bg-red-50';
-                }
-
-                row.className = rowClasses;
-
-                // The data has no status field, so we default to 'Scheduled' or use the existing status
-                const status = appointment.status || 'Scheduled';
-                let statusColor = 'text-yellow-600 font-semibold';
-                let actionButtons = '';
-                
-                if (status === 'Approved') {
-                    statusColor = 'text-green-600 font-semibold';
-                    actionButtons = `
-                        <button data-key="${key}" data-action="disapprove" class="disapprove-btn bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-600 transition duration-150 ease-in-out">Disapprove</button>
-                    `;
-                } else if (status === 'Declined') {
-                    statusColor = 'text-red-600 font-semibold';
-                    actionButtons = `
-                        <button data-key="${key}" data-action="approve" class="approve-btn bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-600 transition duration-150 ease-in-out">Approve</button>
-                    `;
-                } else { // Status is 'Scheduled'
-                    statusColor = 'text-yellow-600 font-semibold';
-                    actionButtons = `
-                        <button data-key="${key}" data-action="approve" class="approve-btn bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-600 transition duration-150 ease-in-out">Approve</button>
-                        <button data-key="${key}" data-action="decline" class="decline-btn bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-600 transition duration-150 ease-in-out ml-2">Decline</button>
-                    `;
-                }
-
-                const contactNumber = appointment.phone || 'N/A';
-                const contactCell = contactNumber || 'N/A';
-                
-                const firstName = appointment.firstName || 'N/A';
-                const lastName = appointment.lastName || 'N/A';
-                const middleName = appointment.middleName || 'N/A';
-
-                row.innerHTML = `
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column">
-                        <input type="checkbox" class="appointment-checkbox" data-key="${key}">
-                    </td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredDate}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredTime}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${lastName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${firstName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${middleName}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.services}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${contactCell}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.specificDetails || 'N/A'}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white ${statusColor}">${status}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-right whitespace-nowrap">${actionButtons}</td>
-                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column">
-                        <button data-key="${key}" data-action="delete" class="delete-row-btn bg-transparent border-none text-gray-500 hover:text-red-600 transition duration-150 ease-in-out">🗑️</button>
-                    </td>
-                `;
-                appointmentsTableBody.appendChild(row);
-            });
-        }
-        
-        // Function to check for duplicate appointments and return a list of keys
-        function checkForDuplicateAppointments(appointments) {
-            const timeSlots = {};
-            const duplicates = new Set();
-        
-            Object.entries(appointments).forEach(([key, appointment]) => {
-                const dateTime = `${appointment.preferredDate}-${appointment.preferredTime}`;
-                if (timeSlots[dateTime]) {
-                    duplicates.add(timeSlots[dateTime]);
-                    duplicates.add(key);
+        // Function to handle authentication
+        const authenticateUser = async () => {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    timeSlots[dateTime] = key;
+                    await signInAnonymously(auth);
                 }
-            });
-        
-            return Array.from(duplicates);
-        }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+            }
+        };
 
-        // Function to filter data based on the current search query and filter button
-        function filterAndRender() {
-            const query = searchInput.value.toLowerCase();
-            const selectedDate = dateInput.value;
-            
-            const filteredBySearch = allAppointments.filter(([key, appointment]) => {
-                const status = appointment.status || 'Scheduled';
-                const matchesText = (
-                    (appointment.firstName && appointment.firstName.toLowerCase().includes(query)) ||
-                    (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) ||
-                    (appointment.middleName && appointment.middleName.toLowerCase().includes(query)) ||
-                    (appointment.services && appointment.services.toLowerCase().includes(query)) ||
-                    (appointment.phone && appointment.phone.toLowerCase().includes(query)) ||
-                    (appointment.email && appointment.email.toLowerCase().includes(query)) ||
-                    (appointment.specificDetails && appointment.specificDetails.toLowerCase().includes(query)) ||
-                    (status && status.toLowerCase().includes(query))
-                );
+        // This is the core security check.
+        // The rest of the script will only run if the user is authenticated.
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is authenticated, proceed to load page content.
+                console.log("User is authenticated. Loading appointment data for Bayanan Main clinic.");
                 
-                // Format the appointment date to match the date input format (YYYY-MM-DD)
-                const appointmentDate = appointment.preferredDate;
-                const matchesDate = !selectedDate || appointmentDate === selectedDate;
+                // --- ALL PAGE LOGIC IS SAFELY CONTAINED WITHIN THIS BLOCK ---
 
-                return matchesText && matchesDate;
-            });
+                // Define a global variable to hold the fetched appointments
+                let allAppointments = [];
+                let currentFilter = 'All';
+                let confirmTimeout = null;
+                let confirmingButton = null;
 
-            let finalData = {};
-            if (currentFilter === 'All') {
-                finalData = Object.fromEntries(filteredBySearch);
-            } else {
-                const filteredByStatus = filteredBySearch.filter(([key, appointment]) => {
-                    const status = appointment.status || 'Scheduled';
-                    return status === currentFilter;
-                });
-                finalData = Object.fromEntries(filteredByStatus);
-            }
-            
-            // Check for and display duplicate warnings
-            const duplicates = checkForDuplicateAppointments(Object.fromEntries(allAppointments));
-            const warningMessage = document.getElementById('doubleBookingWarning');
-            const warningText = document.getElementById('warningText');
+                // Calendar variables
+                let currentYear, currentMonth;
+                const today = new Date();
 
-            if (duplicates.length > 0) {
-                const duplicateAppointments = duplicates.map(key => {
-                    const appt = allAppointments.find(item => item[0] === key)[1];
-                    return `${appt.preferredDate} at ${appt.preferredTime} (Patient: ${appt.firstName} ${appt.lastName})`;
-                }).join(', ');
-                warningText.textContent = `Multiple appointments are scheduled at the same time: ${duplicateAppointments}.`;
-                warningMessage.classList.remove('hidden');
-            } else {
-                warningMessage.classList.add('hidden');
-            }
+                // Function to update the patient counts
+                function updateCounts(data, year, month) {
+                    const totalPatientCountEl = document.getElementById('totalPatientCount');
+                    
+                    if (!data) {
+                        totalPatientCountEl.textContent = '0';
+                        updateCalendar({});
+                        return;
+                    }
 
-            renderTable(finalData, duplicates);
-        }
+                    const appointmentsArray = Object.values(data);
+                    
+                    // Filter appointments for the current calendar month that are also 'Approved'
+                    const approvedAppointmentsInMonth = appointmentsArray.filter(appointment => {
+                        const appointmentDate = new Date(appointment.preferredDate);
+                        const apptYear = appointmentDate.getFullYear();
+                        const apptMonth = appointmentDate.getMonth();
+                        return apptYear === year && apptMonth === month && appointment.status === 'Approved';
+                    });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('searchInput');
-            const dateInput = document.getElementById('dateInput');
-            const appointmentsTableBody = document.getElementById('appointmentsTableBody');
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const toggleDeletionBtn = document.getElementById('toggleDeletionBtn');
-            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-
-            // Listen for changes in the "appointments/bayananmain" path
-            const appointmentsRef = ref(database, 'appointments/bayan_main');
-            onValue(appointmentsRef, (snapshot) => {
-                const data = snapshot.val();
-                allAppointments = data ? Object.entries(data) : [];
-                filterAndRender(); // Render the table with the current filter
-            }, (error) => {
-                console.error("Error fetching data:", error);
-                if (appointmentsTableBody) {
-                    appointmentsTableBody.innerHTML = `<tr><td colspan="12" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+                    const totalCount = approvedAppointmentsInMonth.length;
+                    totalPatientCountEl.textContent = totalCount;
+                    
+                    const dailyCounts = {};
+                    appointmentsArray.forEach(appointment => {
+                        const date = appointment.preferredDate;
+                        if (dailyCounts[date]) {
+                            dailyCounts[date]++;
+                        } else {
+                            dailyCounts[date] = 1;
+                        }
+                    });
+                    updateCalendar(dailyCounts);
                 }
-            });
 
-            // Event listeners for search inputs
-            if (searchInput) {
-                searchInput.addEventListener('keyup', () => {
-                    filterAndRender();
-                });
-            }
-            if (dateInput) {
-                dateInput.addEventListener('change', () => {
-                    filterAndRender();
-                });
-            }
+                function highlightSelectedDate(dateString) {
+                    const previouslySelected = document.querySelector('.calendar-cell.selected-day');
+                    if (previouslySelected) {
+                        previouslySelected.classList.remove('selected-day');
+                    }
+                    if (dateString) {
+                        const dayCell = document.querySelector(`.calendar-day[data-date="${dateString}"]`);
+                        if (dayCell) {
+                            dayCell.classList.add('selected-day');
+                        }
+                    }
+                }
 
-            // Event listener for filter buttons
-            if (filterButtons) {
-                filterButtons.forEach(button => {
+                function generateCalendar(year, month) {
+                    const calendarGridEl = document.getElementById('calendarGrid');
+                    const currentMonthYearEl = document.getElementById('currentMonthYear');
+                    const firstDay = (new Date(year, month)).getDay();
+                    const daysInMonth = 32 - new Date(year, month, 32).getDate();
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                    currentMonthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+                    while (calendarGridEl.children.length > 7) {
+                        calendarGridEl.removeChild(calendarGridEl.lastChild);
+                    }
+                    
+                    for (let i = 0; i < firstDay; i++) {
+                        const blankCell = document.createElement('div');
+                        blankCell.className = "calendar-cell";
+                        calendarGridEl.appendChild(blankCell);
+                    }
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayCell = document.createElement('div');
+                        const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        dayCell.className = `calendar-cell calendar-day p-2`;
+                        dayCell.innerHTML = `<span>${day}</span>`;
+                        dayCell.setAttribute('data-date', formattedDate);
+                        
+                        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                            dayCell.classList.add('current-day');
+                        }
+                        calendarGridEl.appendChild(dayCell);
+                    }
+                }
+                
+                function updateCalendar(dailyCounts) {
+                    const calendarDays = document.querySelectorAll('.calendar-day');
+                    calendarDays.forEach(dayCell => {
+                        const date = dayCell.getAttribute('data-date');
+                        const count = dailyCounts[date] || 0;
+                        const existingCount = dayCell.querySelector('.calendar-count');
+                        if (existingCount) existingCount.remove();
+                        if (count > 0) {
+                            dayCell.classList.add('has-appointments');
+                            const countEl = document.createElement('div');
+                            countEl.className = 'calendar-count';
+                            countEl.textContent = count;
+                            dayCell.appendChild(countEl);
+                        } else {
+                            dayCell.classList.remove('has-appointments');
+                        }
+                    });
+                }
+
+                function renderTable(data, duplicateKeys = []) {
+                    const appointmentsTableBody = document.getElementById('appointmentsTableBody');
+                    appointmentsTableBody.innerHTML = '';
+                    
+                    if (!data || Object.keys(data).length === 0) {
+                        const noDataRow = document.createElement('tr');
+                        noDataRow.innerHTML = `<td colspan="15" class="px-5 py-5 text-center text-gray-500">No appointments found.</td>`;
+                        appointmentsTableBody.appendChild(noDataRow);
+                        return;
+                    }
+                    
+                    const appointmentsArray = Object.entries(data);
+                    
+                    appointmentsArray.forEach(([key, appointment]) => {
+                        const row = document.createElement('tr');
+                        let rowClasses = 'hover:bg-gray-50';
+                        if (duplicateKeys.includes(key)) {
+                            rowClasses += ' bg-red-50';
+                        }
+                        row.className = rowClasses;
+
+                        const status = appointment.status || 'Scheduled';
+                        let statusColor = 'text-yellow-600 font-semibold';
+                        let actionButtons = '';
+                        
+                        if (status === 'Approved') {
+                            statusColor = 'text-green-600 font-semibold';
+                            actionButtons = `<button data-key="${key}" data-action="disapprove" class="disapprove-btn bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-600 transition duration-150 ease-in-out">Disapprove</button>`;
+                        } else if (status === 'Declined') {
+                            statusColor = 'text-red-600 font-semibold';
+                            actionButtons = `<button data-key="${key}" data-action="approve" class="approve-btn bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-600 transition duration-150 ease-in-out">Approve</button>`;
+                        } else {
+                            statusColor = 'text-yellow-600 font-semibold';
+                            actionButtons = `<button data-key="${key}" data-action="approve" class="approve-btn bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-green-600 transition duration-150 ease-in-out">Approve</button> <button data-key="${key}" data-action="decline" class="decline-btn bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold hover:bg-red-600 transition duration-150 ease-in-out ml-2">Decline</button>`;
+                        }
+
+                        row.innerHTML = `
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column"><input type="checkbox" class="appointment-checkbox" data-key="${key}"></td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredDate}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.preferredTime}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.lastName || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.firstName || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.middleName || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.address || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.services || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.phone || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.email || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white">${appointment.specificDetails || 'N/A'}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white ${statusColor}">${status}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-right whitespace-nowrap">${actionButtons}</td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-center"><button data-key="${key}" class="edit-info-btn">Edit</button></td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-center deletion-column"><button data-key="${key}" data-action="delete" class="delete-row-btn bg-transparent border-none text-gray-500 hover:text-red-600 transition">🗑️</button></td>
+                        `;
+                        appointmentsTableBody.appendChild(row);
+                    });
+                }
+                
+                function checkForDuplicateAppointments(appointments) {
+                    const timeSlots = {};
+                    const duplicates = new Set();
+                    Object.entries(appointments).forEach(([key, appointment]) => {
+                        const dateTime = `${appointment.preferredDate}-${appointment.preferredTime}`;
+                        if (timeSlots[dateTime]) {
+                            duplicates.add(timeSlots[dateTime]);
+                            duplicates.add(key);
+                        } else {
+                            timeSlots[dateTime] = key;
+                        }
+                    });
+                    return Array.from(duplicates);
+                }
+
+                function filterAndRender() {
+                    const query = document.getElementById('searchInput').value.toLowerCase();
+                    const selectedDate = document.getElementById('dateInput').value;
+                    const filteredBySearch = allAppointments.filter(([key, appointment]) => {
+                        const status = appointment.status || 'Scheduled';
+                        const matchesText = (
+                            (appointment.firstName && appointment.firstName.toLowerCase().includes(query)) ||
+                            (appointment.lastName && appointment.lastName.toLowerCase().includes(query)) ||
+                            (appointment.middleName && appointment.middleName.toLowerCase().includes(query)) ||
+                            (appointment.address && appointment.address.toLowerCase().includes(query)) ||
+                            (appointment.services && appointment.services.toLowerCase().includes(query)) ||
+                            (appointment.phone && appointment.phone.toLowerCase().includes(query)) ||
+                            (appointment.email && appointment.email.toLowerCase().includes(query)) ||
+                            (appointment.specificDetails && appointment.specificDetails.toLowerCase().includes(query)) ||
+                            (status && status.toLowerCase().includes(query))
+                        );
+                        const matchesDate = !selectedDate || appointment.preferredDate === selectedDate;
+                        return matchesText && matchesDate;
+                    });
+
+                    let finalData = {};
+                    if (currentFilter === 'All') {
+                        finalData = Object.fromEntries(filteredBySearch);
+                    } else {
+                        const filteredByStatus = filteredBySearch.filter(([key, appointment]) => (appointment.status || 'Scheduled') === currentFilter);
+                        finalData = Object.fromEntries(filteredByStatus);
+                    }
+                    const duplicates = checkForDuplicateAppointments(Object.fromEntries(allAppointments));
+                    const warningMessage = document.getElementById('doubleBookingWarning');
+                    if (duplicates.length > 0) {
+                        document.getElementById('warningText').textContent = `Multiple appointments are scheduled at the same time slots.`;
+                        warningMessage.classList.remove('hidden');
+                    } else {
+                        warningMessage.classList.add('hidden');
+                    }
+                    renderTable(finalData, duplicates);
+                }
+
+                function updateDeleteButtonState() {
+                    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                    const checkedCheckboxes = document.querySelectorAll('#appointmentsTableBody .appointment-checkbox:checked');
+                    if (checkedCheckboxes.length > 0) {
+                        deleteSelectedBtn.disabled = false;
+                        deleteSelectedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        deleteSelectedBtn.disabled = true;
+                        deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        deleteSelectedBtn.textContent = 'Delete Selected';
+                        clearTimeout(confirmTimeout);
+                        confirmingButton = null;
+                    }
+                }
+
+                // --- Start of executable code ---
+
+                const appointmentsRef = ref(database, 'appointments/bayanan_main');
+                onValue(appointmentsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    allAppointments = data ? Object.entries(data) : [];
+                    updateCounts(data, currentYear, currentMonth);
+                    filterAndRender();
+                }, (error) => {
+                    console.error("Error fetching data:", error);
+                });
+
+                // Initialize calendar
+                currentYear = today.getFullYear();
+                currentMonth = today.getMonth();
+                generateCalendar(currentYear, currentMonth);
+                
+                // Set up all event listeners
+                document.getElementById('searchInput').addEventListener('keyup', filterAndRender);
+                document.getElementById('dateInput').addEventListener('change', () => {
+                     const dateValue = document.getElementById('dateInput').value;
+                     if (dateValue) {
+                        const selectedDate = new Date(dateValue + 'T00:00:00Z');
+                        currentYear = selectedDate.getUTCFullYear();
+                        currentMonth = selectedDate.getUTCMonth();
+                        generateCalendar(currentYear, currentMonth);
+                        updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                        highlightSelectedDate(dateValue);
+                     } else {
+                        highlightSelectedDate(null);
+                     }
+                     filterAndRender();
+                });
+
+                document.querySelectorAll('.filter-btn').forEach(button => {
                     button.addEventListener('click', () => {
-                        filterButtons.forEach(btn => {
+                        document.querySelectorAll('.filter-btn').forEach(btn => {
                             btn.classList.remove('active', 'bg-blue-600', 'text-white');
                             btn.classList.add('bg-gray-300', 'text-gray-700');
                         });
@@ -366,164 +644,212 @@
                         filterAndRender();
                     });
                 });
-            }
-            
-            // Toggle Deletion Mode
-            toggleDeletionBtn.addEventListener('click', () => {
-                document.body.classList.toggle('deletion-mode');
-                const isDeletionMode = document.body.classList.contains('deletion-mode');
-                if (isDeletionMode) {
-                    toggleDeletionBtn.textContent = 'Done';
-                    toggleDeletionBtn.classList.remove('bg-red-500');
-                    toggleDeletionBtn.classList.add('bg-gray-500');
-                    deleteSelectedBtn.classList.remove('hidden');
-                } else {
-                    toggleDeletionBtn.textContent = 'Manage Deletions';
-                    toggleDeletionBtn.classList.remove('bg-gray-500');
-                    toggleDeletionBtn.classList.add('bg-red-500');
-                    deleteSelectedBtn.classList.add('hidden');
-                    deleteSelectedBtn.disabled = true;
-                    deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    selectAllCheckbox.checked = false;
-                    appointmentsTableBody.querySelectorAll('.appointment-checkbox').forEach(cb => cb.checked = false);
-                }
-            });
+                
+                document.getElementById('toggleDeletionBtn').addEventListener('click', () => {
+                    document.body.classList.toggle('deletion-mode');
+                    const isDeletionMode = document.body.classList.contains('deletion-mode');
+                    const toggleBtn = document.getElementById('toggleDeletionBtn');
+                    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+                    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 
-            // Checkbox logic for 'Delete Selected' button
-            function updateDeleteButtonState() {
-                const checkedCheckboxes = appointmentsTableBody.querySelectorAll('.appointment-checkbox:checked');
-                if (checkedCheckboxes.length > 0) {
-                    deleteSelectedBtn.disabled = false;
-                    deleteSelectedBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    deleteSelectedBtn.disabled = true;
-                    deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    deleteSelectedBtn.textContent = 'Delete Selected'; // Reset text
-                    clearTimeout(confirmTimeout);
-                    confirmingButton = null;
-                }
-            }
-            
-            appointmentsTableBody.addEventListener('change', (e) => {
-                if (e.target.classList.contains('appointment-checkbox')) {
-                    updateDeleteButtonState();
-                }
-            });
+                    if (isDeletionMode) {
+                        toggleBtn.textContent = 'Done';
+                        toggleBtn.classList.remove('bg-red-500');
+                        toggleBtn.classList.add('bg-gray-500');
+                        deleteSelectedBtn.classList.remove('hidden');
+                    } else {
+                        toggleBtn.textContent = 'Manage Deletions';
+                        toggleBtn.classList.remove('bg-gray-500');
+                        toggleBtn.classList.add('bg-red-500');
+                        deleteSelectedBtn.classList.add('hidden');
+                        deleteSelectedBtn.disabled = true;
+                        deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        selectAllCheckbox.checked = false;
+                        document.querySelectorAll('.appointment-checkbox').forEach(cb => cb.checked = false);
+                    }
+                });
 
-            selectAllCheckbox.addEventListener('change', () => {
-                const checkboxes = appointmentsTableBody.querySelectorAll('.appointment-checkbox');
-                checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
-                updateDeleteButtonState();
-            });
-
-            // Event listener for the "Delete Selected" button
-            deleteSelectedBtn.addEventListener('click', () => {
-                if (deleteSelectedBtn.textContent === 'Confirm Delete?') {
-                    const checkedCheckboxes = appointmentsTableBody.querySelectorAll('.appointment-checkbox:checked');
-                    checkedCheckboxes.forEach(checkbox => {
-                        const key = checkbox.getAttribute('data-key');
-                        const appointmentRef = ref(database, `appointments/bayananmain/${key}`);
-                        remove(appointmentRef).catch(error => {
-                            console.error(`Error deleting appointment:`, error);
-                        });
+                document.getElementById('selectAllCheckbox').addEventListener('change', () => {
+                    const isChecked = document.getElementById('selectAllCheckbox').checked;
+                    document.querySelectorAll('#appointmentsTableBody .appointment-checkbox').forEach(cb => {
+                        cb.checked = isChecked;
                     });
-                    
-                    clearTimeout(confirmTimeout);
-                    confirmingButton = null;
-                    deleteSelectedBtn.textContent = 'Delete Selected';
-                    deleteSelectedBtn.disabled = true;
-                    deleteSelectedBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    selectAllCheckbox.checked = false;
-                } else {
-                    deleteSelectedBtn.textContent = 'Confirm Delete?';
-                    confirmingButton = deleteSelectedBtn;
-                    confirmTimeout = setTimeout(() => {
-                        deleteSelectedBtn.textContent = 'Delete Selected';
-                        confirmingButton = null;
-                    }, 3000);
-                }
-            });
+                    updateDeleteButtonState();
+                });
 
-            // Event listener for button clicks using event delegation
-            if (appointmentsTableBody) {
-                appointmentsTableBody.addEventListener('click', (e) => {
+                document.getElementById('appointmentsTableBody').addEventListener('change', (e) => {
+                    if (e.target.classList.contains('appointment-checkbox')) {
+                        updateDeleteButtonState();
+                    }
+                });
+
+                document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+                    const deleteBtn = document.getElementById('deleteSelectedBtn');
+                    if (deleteBtn.textContent === 'Confirm Delete?') {
+                        const checkedCheckboxes = document.querySelectorAll('#appointmentsTableBody .appointment-checkbox:checked');
+                        checkedCheckboxes.forEach(checkbox => {
+                            const key = checkbox.getAttribute('data-key');
+                            if (key) {
+                                const appointmentRef = ref(database, `appointments/bayan_main/${key}`);
+                                remove(appointmentRef).catch(error => {
+                                    console.error(`Error deleting appointment ${key}:`, error);
+                                });
+                            }
+                        });
+                        
+                        clearTimeout(confirmTimeout);
+                        confirmingButton = null;
+                        deleteBtn.textContent = 'Delete Selected';
+                        updateDeleteButtonState();
+                        document.getElementById('selectAllCheckbox').checked = false;
+
+                    } else {
+                        deleteBtn.textContent = 'Confirm Delete?';
+                        confirmingButton = deleteBtn;
+                        confirmTimeout = setTimeout(() => {
+                            if (confirmingButton === deleteBtn) {
+                                deleteBtn.textContent = 'Delete Selected';
+                                confirmingButton = null;
+                            }
+                        }, 3000);
+                    }
+                });
+
+
+                document.getElementById('appointmentsTableBody').addEventListener('click', (e) => {
                     const button = e.target;
                     const key = button.getAttribute('data-key');
                     const action = button.getAttribute('data-action');
-
-                    if (button.classList.contains('approve-btn') || button.classList.contains('decline-btn') || button.classList.contains('disapprove-btn') || button.classList.contains('delete-row-btn')) {
-                        
-                        // Check if a different button is currently in the "confirm" state
-                        if (confirmingButton && confirmingButton !== button) {
-                            clearTimeout(confirmTimeout);
-                            const oldAction = confirmingButton.getAttribute('data-action');
-                            if (oldAction === 'delete') {
-                                confirmingButton.textContent = '🗑️';
-                            } else {
-                                confirmingButton.textContent = oldAction.charAt(0).toUpperCase() + oldAction.slice(1);
-                                confirmingButton.classList.remove('bg-yellow-500');
-                                confirmingButton.classList.add(oldAction === 'approve' ? 'bg-green-500' : 'bg-red-500');
-                            }
-                        }
-                        
-                        if (button.textContent === 'Confirm?') {
-                            // This is the second click, proceed with the update/delete
-                            const appointmentRef = ref(database, `appointments/bayan_main/${key}`);
-
+                    
+                    if (action) {
+                         if (button.textContent === 'Confirm?') {
+                            const appointmentRef = ref(database, `appointments/bayanan_main/${key}`);
                             if (action === 'delete') {
-                                remove(appointmentRef)
-                                    .catch(error => {
-                                        console.error(`Error deleting appointment:`, error);
-                                    });
+                                remove(appointmentRef);
                             } else {
-                                let newStatus = '';
-                                if (action === 'approve') {
-                                    newStatus = 'Approved';
-                                } else if (action === 'decline') {
-                                    newStatus = 'Declined';
-                                } else if (action === 'disapprove') {
-                                    newStatus = 'Scheduled';
-                                }
-                                update(appointmentRef, { status: newStatus })
-                                    .catch(error => {
-                                        console.error(`Error updating appointment status to ${newStatus}:`, error);
-                                    });
+                                let newStatus = action === 'approve' ? 'Approved' : (action === 'decline' ? 'Declined' : 'Scheduled');
+                                update(appointmentRef, { status: newStatus });
                             }
-
-                            // Reset the button state immediately after action
                             clearTimeout(confirmTimeout);
                             confirmingButton = null;
-                            if (action === 'delete') {
-                                button.textContent = '🗑️';
-                            } else {
-                                button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
-                                button.classList.remove('bg-yellow-500');
-                                button.classList.add(action === 'approve' ? 'bg-green-500' : 'bg-red-500');
-                            }
                         } else {
-                            // This is the first click, change to "Confirm?"
+                            if(confirmingButton) {
+                                const oldAction = confirmingButton.getAttribute('data-action');
+                                confirmingButton.textContent = oldAction === 'delete' ? '🗑️' : oldAction.charAt(0).toUpperCase() + oldAction.slice(1);
+                            }
                             button.textContent = 'Confirm?';
-                            button.classList.add('bg-yellow-500');
-                            button.classList.remove('bg-green-500', 'bg-red-500', 'bg-red-700');
-                            
                             confirmingButton = button;
-                            
-                            // Set a timeout to revert the button state if not confirmed
                             confirmTimeout = setTimeout(() => {
-                                if (action === 'delete') {
-                                    button.textContent = '🗑️';
-                                } else {
-                                    button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
-                                    button.classList.add(action === 'approve' ? 'bg-green-500' : 'bg-red-500');
-                                }
-                                button.classList.remove('bg-yellow-500');
+                                button.textContent = action === 'delete' ? '🗑️' : action.charAt(0).toUpperCase() + action.slice(1);
                                 confirmingButton = null;
-                            }, 3000); // 3-second timeout
+                            }, 3000);
                         }
                     }
+
+                    if (button.classList.contains('edit-info-btn')) {
+                        const appointment = allAppointments.find(([k]) => k === key)[1];
+                        document.getElementById('editKey').value = key;
+                        document.getElementById('editLastName').value = appointment.lastName;
+                        document.getElementById('editFirstName').value = appointment.firstName;
+                        document.getElementById('editMiddleName').value = appointment.middleName;
+                        document.getElementById('editAddress').value = appointment.address;
+                        document.getElementById('editService').value = appointment.services;
+                        document.getElementById('editPhone').value = appointment.phone;
+                        document.getElementById('editModal').classList.remove('hidden');
+                    }
                 });
+
+                document.getElementById('viewServiceTotalsBtn').addEventListener('click', () => {
+                    const serviceCounts = {};
+                    allAppointments.forEach(([key, appointment]) => {
+                        const appointmentDate = new Date(appointment.preferredDate);
+                        if (appointment.status === 'Approved' && appointment.services && appointmentDate.getFullYear() === currentYear && appointmentDate.getMonth() === currentMonth) {
+                            const serviceName = appointment.services;
+                            serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+                        }
+                    });
+
+                    const serviceListContainer = document.getElementById('serviceListContainer');
+                    const modalTitle = document.getElementById('serviceCountTitle');
+                    const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' });
+                    
+                    modalTitle.textContent = `Approved Service Totals for ${monthName} ${currentYear}`;
+                    
+                    let serviceListHtml = '';
+                    if (Object.keys(serviceCounts).length > 0) {
+                        for (const [service, count] of Object.entries(serviceCounts)) {
+                            serviceListHtml += `
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span class="text-sm font-medium text-gray-700">${service}</span>
+                                    <span class="text-sm font-bold text-blue-600">${count}</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        serviceListHtml = `<p class="text-center text-gray-500">No approved appointments found for this month.</p>`;
+                    }
+                    
+                    serviceListContainer.innerHTML = serviceListHtml;
+                    document.getElementById('serviceCountModal').classList.remove('hidden');
+                });
+
+                document.getElementById('closeServiceCountModalBtn').addEventListener('click', () => {
+                    document.getElementById('serviceCountModal').classList.add('hidden');
+                });
+
+
+                document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.add('hidden'));
+                document.getElementById('saveEditBtn').addEventListener('click', () => {
+                     const key = document.getElementById('editKey').value;
+                     const updatedData = {
+                        lastName: document.getElementById('editLastName').value,
+                        firstName: document.getElementById('editFirstName').value,
+                        middleName: document.getElementById('editMiddleName').value,
+                        address: document.getElementById('editAddress').value,
+                        services: document.getElementById('editService').value,
+                        phone: document.getElementById('editPhone').value,
+                    };
+                    update(ref(database, `appointments/bayanan_main/${key}`), updatedData).then(() => {
+                        document.getElementById('editModal').classList.add('hidden');
+                    });
+                });
+                
+                document.getElementById('prevMonthBtn').addEventListener('click', () => {
+                    currentMonth--;
+                    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                    generateCalendar(currentYear, currentMonth);
+                    updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                });
+                 document.getElementById('nextMonthBtn').addEventListener('click', () => {
+                    currentMonth++;
+                    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                    generateCalendar(currentYear, currentMonth);
+                    updateCounts(Object.fromEntries(allAppointments), currentYear, currentMonth);
+                });
+
+                 document.getElementById('calendarGrid').addEventListener('click', (e) => {
+                    const dayCell = e.target.closest('.calendar-day');
+                    if (dayCell) {
+                        const selectedDate = dayCell.getAttribute('data-date');
+                        document.getElementById('dateInput').value = selectedDate;
+                        highlightSelectedDate(selectedDate);
+                        filterAndRender();
+                    }
+                });
+
+                document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+
+            } else {
+                // User is not signed in. Redirect them away.
+                console.log("User is not authenticated. Redirecting to login page.");
+                window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
             }
         });
+        
+        // Trigger the authentication process on page load
+        authenticateUser();
+
     </script>
 </body>
 </html>

@@ -141,6 +141,28 @@
                 padding: 8px;
             }
         }
+        /* Custom Modal Styling from Admin HTML */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -154,23 +176,25 @@
                     <h2 class="text-lg md:text-xl font-medium text-dark-blue">Tunasan Health Center Appointments</h2>
                 </div>
             </div>
-            <!-- Back button to return to the main dashboard -->
-            <a href="#" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Back to Centers</a>
+            <div class="flex items-center space-x-4">
+                <span id="loginStatus" class="text-dark-blue text-sm font-semibold"></span>
+                <a href="admin-cityhealthmuntinlupa2025-2026-colegio_de_muntinlupa (1).html" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-gray-800 transition">Back to Centers</a>
+                <button id="logoutButton" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200">
+                    Log Out
+                </button>
+            </div>
         </div>
         <div class="w-full h-2 header-bg-dark"></div>
     </header>
 
-    <!-- Approved Patient Count Div -->
     <div class="w-full bg-white shadow-md rounded-md p-4 mt-6 text-center font-bold text-lg text-gray-800 max-w-7xl mx-auto">
         Approved Clients this Month: <span id="totalPatientCount">0</span>
     </div>
 
     <main class="container mx-auto p-4 md:p-8 flex-grow">
-        <!-- Patient Count and Search/Filter Section -->
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-2 mb-6 controls">
             <div class="flex items-center space-x-2">
-                <!-- Count moved into a dedicated section -->
-            </div>
+                </div>
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-1/2">
                 <div class="relative w-full">
                     <input id="searchInput" type="text" placeholder="Search by name or service..." class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500">
@@ -194,7 +218,6 @@
             </div>
         </div>
 
-        <!-- Calendar View Section -->
         <div class="bg-white shadow-md rounded-lg p-6 mb-6">
             <div class="flex justify-between items-center mb-4">
                 <button id="prevMonthBtn" class="px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition">
@@ -219,13 +242,11 @@
             </div>
         </div>
 
-        <!-- Warning message for double bookings -->
         <div id="doubleBookingWarning" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
             <strong class="font-bold">Warning!</strong>
             <span class="block sm:inline" id="warningText"></span>
         </div>
 
-        <!-- Appointment Data Table -->
         <div class="table-container bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full leading-normal">
                 <thead>
@@ -252,7 +273,6 @@
                     </tr>
                 </thead>
                 <tbody id="appointmentsTableBody" class="text-sm">
-                    <!-- Data will be dynamically inserted here by JavaScript -->
                     <tr><td colspan="15" class="px-5 py-5 text-center text-gray-500">Loading data...</td></tr>
                 </tbody>
             </table>
@@ -265,7 +285,6 @@
         </div>
     </footer>
 
-    <!-- Edit Modal -->
     <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
@@ -299,14 +318,12 @@
         </div>
     </div>
     
-    <!-- Service Count Modal -->
     <div id="serviceCountModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
                 <h3 id="serviceCountTitle" class="text-lg leading-6 font-medium text-gray-900">Total Approved Clients per Service</h3>
                 <div id="serviceListContainer" class="mt-4 text-left px-7 py-3 max-h-80 overflow-y-auto">
-                    <!-- Service list will be injected here dynamically -->
-                </div>
+                    </div>
                 <div class="items-center px-4 py-3">
                     <button id="closeServiceCountModalBtn" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         Close
@@ -315,13 +332,28 @@
             </div>
         </div>
     </div>
+    
+    <div id="logoutModal" class="modal-overlay">
+        <div class="modal-content flex flex-col gap-6 items-center">
+            <h4 class="text-xl font-bold text-dark-blue">Are you sure you want to log out?</h4>
+            <div class="flex gap-4">
+                <button id="confirmLogoutButton" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                    Yes, Log Out
+                </button>
+                <button id="cancelLogoutButton" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
 
-    <!-- Firebase SDKs -->
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        // Import Auth functions for security
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -338,6 +370,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const auth = getAuth(app); // Initialize Auth
 
         // Define a global variable to hold the fetched appointments
         let allAppointments = [];
@@ -625,6 +658,24 @@
 
             renderTable(finalData, duplicates);
         }
+        
+        // Function to set up the Realtime Database listener
+        function setupDatabaseListener() {
+            const appointmentsRef = ref(database, 'appointments/tunasan');
+            onValue(appointmentsRef, (snapshot) => {
+                const data = snapshot.val();
+                allAppointments = data ? Object.entries(data) : [];
+                updateCounts(data, currentYear, currentMonth); // Pass current month and year to updateCounts
+                filterAndRender(); // Render the table with the current filter
+            }, (error) => {
+                console.error("Error fetching data:", error);
+                const appointmentsTableBody = document.getElementById('appointmentsTableBody');
+                if (appointmentsTableBody) {
+                    appointmentsTableBody.innerHTML = `<tr><td colspan="15" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+                }
+            });
+        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('searchInput');
@@ -645,6 +696,13 @@
             const serviceCountModal = document.getElementById('serviceCountModal');
             const closeServiceCountModalBtn = document.getElementById('closeServiceCountModalBtn');
             const serviceListContainer = document.getElementById('serviceListContainer');
+            
+            // New security-related elements
+            const logoutButton = document.getElementById('logoutButton');
+            const logoutModal = document.getElementById('logoutModal');
+            const confirmLogoutButton = document.getElementById('confirmLogoutButton');
+            const cancelLogoutButton = document.getElementById('cancelLogoutButton');
+            const loginStatus = document.getElementById('loginStatus');
 
             
             // Initialize calendar
@@ -652,20 +710,44 @@
             currentMonth = today.getMonth();
             generateCalendar(currentYear, currentMonth);
 
-            // Listen for changes in the "appointments/tunasan" path
-            const appointmentsRef = ref(database, 'appointments/tunasan');
-            onValue(appointmentsRef, (snapshot) => {
-                const data = snapshot.val();
-                allAppointments = data ? Object.entries(data) : [];
-                updateCounts(data, currentYear, currentMonth); // Pass current month and year to updateCounts
-                filterAndRender(); // Render the table with the current filter
-            }, (error) => {
-                console.error("Error fetching data:", error);
-                if (appointmentsTableBody) {
-                    appointmentsTableBody.innerHTML = `<tr><td colspan="15" class="px-5 py-5 text-center text-red-500">Failed to load data. Please check your database connection.</td></tr>`;
+            // === START OF SECURITY IMPLEMENTATION (Copied from admin HTML) ===
+
+            // Listener for authentication state changes.
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log("User is logged in.");
+                    loginStatus.textContent = `Signed in as Admin`;
+                    // Only start fetching data once authenticated
+                    setupDatabaseListener();
+                } else {
+                    console.log("No user found. Redirecting to login page.");
+                    // Redirect unauthenticated users
+                    window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html';
                 }
             });
 
+            // Event listener to show the modal when Log Out is clicked
+            logoutButton.addEventListener('click', () => {
+                logoutModal.style.display = 'flex';
+            });
+
+            // Event listener to handle "Yes, Log Out" click
+            confirmLogoutButton.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    // Redirect after successful logout
+                    window.location.href = 'https://muntinlupacityhealthoffice.github.io/queue/preselection.html?logout=success';
+                }).catch((error) => {
+                    console.error("Logout failed:", error);
+                });
+            });
+
+            // Event listener to handle "Cancel" click (hides modal)
+            cancelLogoutButton.addEventListener('click', () => {
+                logoutModal.style.display = 'none';
+            });
+
+            // === END OF SECURITY IMPLEMENTATION ===
+            
             // Event listeners for calendar navigation
             prevMonthBtn.addEventListener('click', () => {
                 currentMonth--;
@@ -922,7 +1004,7 @@
             closeEditModalBtn.addEventListener('click', () => {
                 editModal.classList.add('hidden');
             });
-            
+
             closeServiceCountModalBtn.addEventListener('click', () => {
                 serviceCountModal.classList.add('hidden');
             });
@@ -1081,4 +1163,3 @@
     </script>
 </body>
 </html>
-

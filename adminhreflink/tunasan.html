@@ -123,63 +123,62 @@
     @media print {
         body {
             background-color: #fff;
-            /* Ensure maximum readability for print */
         }
-        /* Hide all main UI elements not needed for the report */
-        header, 
-        footer, 
-        .controls, 
-        .print-btn, 
-        .edit-info-btn, 
-        .delete-row-btn, 
-        .deletion-column,
-        /* Explicitly hide the calendar view container */
-        .bg-white.shadow-md.rounded-lg.p-6.mb-6 { 
+
+        /* Hide all UI elements not needed for the report */
+        header, /* Hides the top banner and Back button */
+        footer, /* Hides the bottom footer and its content/links */
+        .controls, /* Hides search, filters, and deletion buttons */
+        .print-btn, /* Hides the Print button */
+        .edit-info-btn, /* Hides the Edit buttons in the table */
+        .delete-row-btn, /* Hides the Trash button */
+        .deletion-column, /* Hides the deletion checkbox/trash column */
+        /* Hides the calendar view container */
+        .bg-white.shadow-md.rounded-lg.p-6.mb-6, 
+        /* Hides the 'Approved Client Count' box */
+        .w-full.bg-white.shadow-md.rounded-md.p-4.mt-6.text-center.font-bold.text-lg.text-gray-800.max-w-7xl.mx-auto,
+        /* Hides the Warning message for double bookings */
+        #doubleBookingWarning,
+        /* Explicitly hide action and edit columns by index */
+        table th:nth-child(13),
+        table td:nth-child(13),
+        table th:nth-child(14),
+        table td:nth-child(14)
+        {
             display: none !important;
         }
+
         /* Ensure the main content area (where the table is) uses full space */
         main {
             padding: 0 !important;
             margin: 0 !important;
-            width: 100%;
+            flex-grow: unset !important; /* Prevents unwanted space */
         }
-        /* Table container should not have overflow-x */
+        
+        /* Table container should not have overflow-x and should span full width */
         .table-container {
             overflow-x: visible;
             box-shadow: none;
-            margin-top: 20px; /* Add some space if needed, though main is now 0 padding */
+            width: 100%;
+            margin-top: 0;
+            padding: 0;
+            border-radius: 0;
         }
+        
         /* Standard table styling for a clean printout */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10pt; /* Smaller font for more data on a page */
+            font-size: 10pt; 
         }
         th, td {
             border: 1px solid #ccc;
-            padding: 4px 8px; /* Reduced padding for space */
+            padding: 4px 8px; 
             line-height: 1.2;
-            word-wrap: break-word; /* Ensure long words break */
         }
-        /* Hide the status action column */
-        .px-5.py-3.border-b-2.border-gray-200:nth-child(13), /* Action TH */
-        #appointmentsTableBody td:nth-child(13), /* Action TD */
-        .px-5.py-3.border-b-2.border-gray-200:nth-child(14), /* Edit Info TH */
-        #appointmentsTableBody td:nth-child(14) /* Edit Info TD */
-         {
-            display: none !important;
-        }
-
-        /* The Patient Count at the top should also be hidden for a clean data-only report */
-        .w-full.bg-white.shadow-md.rounded-md.p-4.mt-6.text-center.font-bold.text-lg.text-gray-800.max-w-7xl.mx-auto {
-            display: none !important;
-        }
-
-        /* Ensure the deletion column is gone */
-        .deletion-column {
-            display: none !important;
-        }
+        
     }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
